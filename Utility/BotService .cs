@@ -9,15 +9,22 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
+using JFjewelery.Services.Interfaces;
+using Telegram.Bot.Types.ReplyMarkups;
+
+
 namespace JFjewelery.Utility
 {
     public class BotService : BackgroundService
     {
         private readonly ITelegramBotClient _botClient;
 
-        public BotService(ITelegramBotClient botClient)
+        private readonly IEnumerable<IBotScenario> _scenarios;
+
+        public BotService(ITelegramBotClient botClient, IEnumerable<IBotScenario> scenarios)
         {
             _botClient = botClient;
+            _scenarios = scenarios;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -41,7 +48,9 @@ namespace JFjewelery.Utility
 
         private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            if (update.Type == UpdateType.Message && update.Message!.Text != null)
+            // USE BOTCLIENT FROM PARAMETRS!!!
+            
+            if (update.Type == UpdateType.Message && update.Message!.Text != null && update.Message?.Text != "/start")
             {
                 var chatId = update.Message.Chat.Id;
                 var messageText = update.Message.Text;
@@ -50,9 +59,37 @@ namespace JFjewelery.Utility
 
                 await botClient.SendTextMessageAsync(
                     chatId: chatId,
-                    text: $"You said: {messageText}",
+                    text: $"Send /start to start chat",
                     cancellationToken: cancellationToken);
             }
+
+            //Scenario buttons
+            if(update.Type == UpdateType.Message && update.Message?.Text == "/start")
+            {
+                var buttons = _scenarios.Select(s => InlineKeyboardButton.WithCallbackData(s.Name, s.Name)).ToArray();
+                var keyboard = new InlineKeyboardMarkup(buttons.Chunk(2));
+
+
+                await botClient.SendTextMessageAsync(
+                chatId: update.Message.Chat.Id,
+                text: "Choose an option:",
+                replyMarkup: keyboard,
+                cancellationToken: cancellationToken);
+            }
+
+            //Running the scenario
+            else if (update.Type == UpdateType.CallbackQuery)
+            {
+                var scenarioName = update.CallbackQuery.Data;
+                var scenario = _scenarios.FirstOrDefault(s => s.Name == scenarioName);
+
+                if (scenario != null)
+                    await scenario.ExecuteAsync(update, cancellationToken);
+                else
+                    await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Option not found", cancellationToken: cancellationToken);
+            }
+
+
         }
 
         private Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)

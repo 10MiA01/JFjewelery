@@ -13,6 +13,8 @@ using Microsoft.EntityFrameworkCore;
 
 using JFjewelery.Utility;
 using JFjewelery.Data;
+using JFjewelery.Services;
+using JFjewelery.Services.Interfaces;
 
 
 namespace JFjelelery;
@@ -41,6 +43,11 @@ class Program
                 services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(connectionString));
 
+                //Bot-scenarios
+                services.AddTransient<IBotScenario, ScenarioPersonalForm>();
+
+
+                //Add bot to host
                 services.AddHostedService<BotService>();
             })
             .Build();
