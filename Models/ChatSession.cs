@@ -1,0 +1,32 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace JFjewelery.Models
+{
+    internal class ChatSession
+    {
+        [Key]
+        public int Id { get; set; }
+
+        [Required]
+        public int CustomerId { get; set; }
+
+        [ForeignKey("CustomerId")]
+        public Customer Customer { get; set; } = null!;
+
+        [Required]
+        public string CurrentScenario { get; set; } = "Idle";
+
+        public string? ScenarioStep { get; set; }
+
+        public string? TempData { get; set; }
+
+        public DateTime? LastUpdated { get; set; }
+
+    }
+}

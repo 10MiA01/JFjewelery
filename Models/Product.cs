@@ -28,6 +28,8 @@ namespace JFjewelery.Models
         public int Quantity { get; set; }
 
         public ICollection<OrderProduct> OrderProducts { get; set; } = new List<OrderProduct>();
+        public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+
 
     }
 }
