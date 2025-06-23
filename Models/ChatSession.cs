@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace JFjewelery.Models
 {
-    internal class ChatSession
+    public class ChatSession
     {
         [Key]
         public int Id { get; set; }

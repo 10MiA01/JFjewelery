@@ -10,7 +10,7 @@ using JFjewelery.Models;
 
 namespace JFjewelery.Data
 {
-    internal class AppDbContext : DbContext
+    public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
@@ -27,6 +27,8 @@ namespace JFjewelery.Data
         public DbSet<OrderProduct> OrderProducts { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
+
+        public DbSet<ChatSession> ChatSessions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

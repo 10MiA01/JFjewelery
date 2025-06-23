@@ -43,6 +43,9 @@ class Program
                 services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(connectionString));
 
+                //Services_SCOPED
+                services.AddScoped<ICustomerService, CustomerService>();
+
                 //Bot-scenarios
                 services.AddTransient<IBotScenario, ScenarioPersonalForm>();
 

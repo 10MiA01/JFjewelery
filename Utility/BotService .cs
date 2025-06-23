@@ -10,6 +10,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 using JFjewelery.Services.Interfaces;
+using JFjewelery.Services;
 using Telegram.Bot.Types.ReplyMarkups;
 
 
@@ -21,10 +22,13 @@ namespace JFjewelery.Utility
 
         private readonly IEnumerable<IBotScenario> _scenarios;
 
-        public BotService(ITelegramBotClient botClient, IEnumerable<IBotScenario> scenarios)
+        private readonly ICustomerService _customerService;
+
+        public BotService(ITelegramBotClient botClient, IEnumerable<IBotScenario> scenarios, ICustomerService customerService)
         {
             _botClient = botClient;
             _scenarios = scenarios;
+            _customerService = customerService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -63,13 +67,24 @@ namespace JFjewelery.Utility
                     cancellationToken: cancellationToken);
             }
 
-            //Scenario buttons
+            
             if(update.Type == UpdateType.Message && update.Message?.Text == "/start")
             {
+                //Cheking if we have the customer, if not yet=>create
+                var telegramAcc = update.Message.From?.Username
+                    ?? update.Message.From?.Id.ToString();
+
+                if (telegramAcc != null)
+                {
+                    var customer = await _customerService.GetOrCreateCustomerAsync(telegramAcc);
+
+                }
+
                 var buttons = _scenarios.Select(s => InlineKeyboardButton.WithCallbackData(s.Name, s.Name)).ToArray();
                 var keyboard = new InlineKeyboardMarkup(buttons.Chunk(2));
 
 
+                //Scenario buttons
                 await botClient.SendTextMessageAsync(
                 chatId: update.Message.Chat.Id,
                 text: "Choose an option:",
