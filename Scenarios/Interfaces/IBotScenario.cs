@@ -9,7 +9,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 
-namespace JFjewelery.Services.Interfaces
+namespace JFjewelery.Scenarios.Interfaces
 {
     public interface IBotScenario
     {

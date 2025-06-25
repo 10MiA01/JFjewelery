@@ -11,7 +11,10 @@ using Telegram.Bot.Types.Enums;
 
 using JFjewelery.Services.Interfaces;
 using JFjewelery.Services;
+using JFjewelery.Scenarios;
+using JFjewelery.Scenarios.Interfaces;
 using Telegram.Bot.Types.ReplyMarkups;
+using Microsoft.Extensions.DependencyInjection;
 
 
 namespace JFjewelery.Utility
@@ -20,15 +23,12 @@ namespace JFjewelery.Utility
     {
         private readonly ITelegramBotClient _botClient;
 
-        private readonly IEnumerable<IBotScenario> _scenarios;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        private readonly ICustomerService _customerService;
-
-        public BotService(ITelegramBotClient botClient, IEnumerable<IBotScenario> scenarios, ICustomerService customerService)
+        public BotService(ITelegramBotClient botClient, IServiceScopeFactory scopeFactory)
         {
             _botClient = botClient;
-            _scenarios = scenarios;
-            _customerService = customerService;
+            _scopeFactory = scopeFactory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -53,7 +53,13 @@ namespace JFjewelery.Utility
         private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             // USE BOTCLIENT FROM PARAMETRS!!!
-            
+
+            using var scope = _scopeFactory.CreateScope();
+
+            var _scenarios = scope.ServiceProvider.GetServices<IBotScenario>();
+            var _customerService = scope.ServiceProvider.GetRequiredService<ICustomerService>();
+            var _chatSessionService = scope.ServiceProvider.GetRequiredService<IChatSessionService>();
+
             if (update.Type == UpdateType.Message && update.Message!.Text != null && update.Message?.Text != "/start")
             {
                 var chatId = update.Message.Chat.Id;
@@ -70,21 +76,23 @@ namespace JFjewelery.Utility
             
             if(update.Type == UpdateType.Message && update.Message?.Text == "/start")
             {
-                //Cheking if we have the customer, if not yet=>create
+                //Cheking if we have the customer, if not yet=>create, reset chat state
                 var telegramAcc = update.Message.From?.Username
                     ?? update.Message.From?.Id.ToString();
 
                 if (telegramAcc != null)
                 {
                     var customer = await _customerService.GetOrCreateCustomerAsync(telegramAcc);
+                    _chatSessionService.ResetSessionAsync(customer.Id);
 
                 }
 
+                //Scenario buttons
                 var buttons = _scenarios.Select(s => InlineKeyboardButton.WithCallbackData(s.Name, s.Name)).ToArray();
                 var keyboard = new InlineKeyboardMarkup(buttons.Chunk(2));
 
 
-                //Scenario buttons
+                //Send the message to the client
                 await botClient.SendTextMessageAsync(
                 chatId: update.Message.Chat.Id,
                 text: "Choose an option:",

@@ -15,6 +15,8 @@ using JFjewelery.Utility;
 using JFjewelery.Data;
 using JFjewelery.Services;
 using JFjewelery.Services.Interfaces;
+using JFjewelery.Scenarios.Interfaces;
+using JFjewelery.Scenarios;
 
 
 namespace JFjelelery;
@@ -45,9 +47,10 @@ class Program
 
                 //Services_SCOPED
                 services.AddScoped<ICustomerService, CustomerService>();
+                services.AddScoped<IChatSessionService, ChatSessionService>();
 
                 //Bot-scenarios
-                services.AddTransient<IBotScenario, ScenarioPersonalForm>();
+                services.AddScoped<IBotScenario, ScenarioPersonalForm>();
 
 
                 //Add bot to host

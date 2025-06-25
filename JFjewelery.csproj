@@ -27,7 +27,6 @@
 
   <ItemGroup>
     <Folder Include="Media\images\products\1\" />
-    <Folder Include="Modules\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,7 +8,7 @@ using JFjewelery.Models;
 
 namespace JFjewelery.Services.Interfaces
 {
-    internal interface IChatSessionService
+    public interface IChatSessionService
     {
         Task<ChatSession> GetOrCteateSessionAsync(int customerId);
         Task UpdateSessionAsync(ChatSession session);

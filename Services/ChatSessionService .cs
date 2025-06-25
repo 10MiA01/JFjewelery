@@ -28,7 +28,7 @@ namespace JFjewelery.Services
                 {
                     CustomerId = customerId,
                     CurrentScenario = "Idle",
-                    LastUpdated = DateTime.Now
+                    LastUpdated = DateTime.UtcNow
                 };
                 _dbContext.ChatSessions.Add(session);
                 await _dbContext.SaveChangesAsync();
@@ -38,7 +38,7 @@ namespace JFjewelery.Services
 
         public async Task UpdateSessionAsync(ChatSession session)
         {
-            session.LastUpdated = DateTime.Now;
+            session.LastUpdated = DateTime.UtcNow;
             _dbContext.ChatSessions.Update(session);
             await _dbContext.SaveChangesAsync();
         }
@@ -52,7 +52,7 @@ namespace JFjewelery.Services
                 session.CurrentScenario = null;
                 session.ScenarioStep = null;
                 session.TempData = null;
-                session.LastUpdated = DateTime.Now;
+                session.LastUpdated = DateTime.UtcNow;
             }
             else
             {
@@ -60,7 +60,7 @@ namespace JFjewelery.Services
                 {
                     CustomerId = customerId,
                     CurrentScenario = "Idle",
-                    LastUpdated = DateTime.Now
+                    LastUpdated = DateTime.UtcNow
                 };
                 _dbContext.ChatSessions.Add(session);
                 await _dbContext.SaveChangesAsync();

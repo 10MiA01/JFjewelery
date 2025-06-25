@@ -29,7 +29,9 @@ namespace JFjewelery.Models
         public string? MetalColor { get; set; }  
 
         [MaxLength(50)]
-        public string? Stone { get; set; }    
+        public string? Stone { get; set; }
+        [MaxLength(50)]
+        public string? StoneColor { get; set; }
         public int? StoneCount { get; set; }
 
         [MaxLength(30)]
