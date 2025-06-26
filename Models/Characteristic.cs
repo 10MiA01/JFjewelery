@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using JFjewelery.Models.Characteristics;
 
 namespace JFjewelery.Models
 {
@@ -18,30 +19,8 @@ namespace JFjewelery.Models
         public int ProductId { get; set; }
         public Product Product { get; set; } = null!;
 
-        [MaxLength(30)]
-        public string? Material { get; set; }  
-
-        public int? Purity { get; set; }       
-
-        public float? Weight { get; set; }     
-
-        [MaxLength(20)]
-        public string? MetalColor { get; set; }  
-
-        [MaxLength(50)]
-        public string? Stone { get; set; }
-        [MaxLength(50)]
-        public string? StoneColor { get; set; }
-        public int? StoneCount { get; set; }
-
-        [MaxLength(30)]
-        public string? StoneShape { get; set; } 
-
-        [MaxLength(10)]
-        public string? Size { get; set; }       
-
-        [MaxLength(30)]
-        public string? Coating { get; set; }    
+        public ICollection<CharacteristicStone>? Stones { get; set; } = new List<CharacteristicStone>();
+        public ICollection<CharacteristicMetal>? Metals { get; set; } = new List<CharacteristicMetal>();
 
         [MaxLength(20)]
         public string? Gender { get; set; }     
@@ -51,5 +30,8 @@ namespace JFjewelery.Models
 
         [MaxLength(50)]
         public string? Manufacturer { get; set; }
+
+        [MaxLength(200)]
+        public string? Description { get; set; }
     }
 }
