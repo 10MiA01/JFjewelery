@@ -29,74 +29,79 @@ namespace JFjewelery.Scenarios
 
 
             //TO DO
-            _steps = new()
-            {
-                ["Start"] = StepStartAsync,
-                ["Material"] = StepMaterialAsync,
-                ["Size"] = StepSizeAsync,
-                ["Confirm"] = StepConfirmAsync
-            };
+            //_steps = new()
+            //{
+            //    ["Start"] = StepStartAsync,
+            //    ["Material"] = StepMaterialAsync,
+            //    ["Size"] = StepSizeAsync,
+            //    ["Confirm"] = StepConfirmAsync
+            //};
         }
 
         public string Name => "Personal form";
 
+        public async Task ExecuteAsync(Update update, CancellationToken cancellationToken)
+        {
+            // дщпшс
+        }
+
 
         //TO DO
 
-        public async Task ExecuteAsync(Update update, ChatSession session, CancellationToken cancellationToken = default)
-        {
-            var chatId = update.CallbackQuery!.Message.Chat.Id;
-            var step = session.ScenarioStep ?? "Start";
-            if (!_steps.TryGetValue(step, out var handler))
-            {
-                await _bot.SendTextMessageAsync(update.GetChatId(), "Неизвестный шаг. Начинаем заново.");
-                session.ScenarioStep = "Start";
-                handler = StepStartAsync;
-            }
+        //public async Task ExecuteAsync(Update update, ChatSession session, CancellationToken cancellationToken = default)
+        //{
+        //    var chatId = update.CallbackQuery!.Message.Chat.Id;
+        //    var step = session.ScenarioStep ?? "Start";
+        //    if (!_steps.TryGetValue(step, out var handler))
+        //    {
+        //        await _bot.SendTextMessageAsync(update.GetChatId(), "Неизвестный шаг. Начинаем заново.");
+        //        session.ScenarioStep = "Start";
+        //        handler = StepStartAsync;
+        //    }
 
-            await handler(update, session);
-            session.LastUpdated = DateTime.UtcNow;
-            await _sessionService.UpdateAsync(session);
-        }
+        //    await handler(update, session);
+        //    session.LastUpdated = DateTime.UtcNow;
+        //    await _sessionService.UpdateAsync(session);
+        //}
 
 
-        
-        private async Task StepStartAsync(Update update, ChatSession session)
-        {
-            await _bot.SendTextMessageAsync(update.GetChatId(), "Какой материал украшения?");
-            session.ScenarioStep = "Material";
-        }
 
-        private async Task StepMaterialAsync(Update update, ChatSession session)
-        {
-            session.TempData["Material"] = update.Message?.Text;
-            await _bot.SendTextMessageAsync(update.GetChatId(), "Укажите размер:");
-            session.ScenarioStep = "Size";
-        }
+        //private async Task StepStartAsync(Update update, ChatSession session)
+        //{
+        //    await _bot.SendTextMessageAsync(update.GetChatId(), "Какой материал украшения?");
+        //    session.ScenarioStep = "Material";
+        //}
 
-        private async Task StepSizeAsync(Update update, ChatSession session)
-        {
-            session.TempData["Size"] = update.Message?.Text;
-            await _bot.SendTextMessageAsync(update.GetChatId(), "Подтвердите заказ: да/нет");
-            session.ScenarioStep = "Confirm";
-        }
+        //private async Task StepMaterialAsync(Update update, ChatSession session)
+        //{
+        //    session.TempData["Material"] = update.Message?.Text;
+        //    await _bot.SendTextMessageAsync(update.GetChatId(), "Укажите размер:");
+        //    session.ScenarioStep = "Size";
+        //}
 
-        private async Task StepConfirmAsync(Update update, ChatSession session)
-        {
-            var reply = update.Message?.Text?.ToLower();
-            if (reply == "да")
-            {
-                var material = session.TempData["Material"];
-                var size = session.TempData["Size"];
-                await _bot.SendTextMessageAsync(update.GetChatId(), $"Заказ оформлен! Материал: {material}, размер: {size}");
-            }
-            else
-            {
-                await _bot.SendTextMessageAsync(update.GetChatId(), "Заказ отменён.");
-            }
+        //private async Task StepSizeAsync(Update update, ChatSession session)
+        //{
+        //    session.TempData["Size"] = update.Message?.Text;
+        //    await _bot.SendTextMessageAsync(update.GetChatId(), "Подтвердите заказ: да/нет");
+        //    session.ScenarioStep = "Confirm";
+        //}
 
-            session.ScenarioStep = "Start";
-            session.TempData.Clear();
-        }
+        //private async Task StepConfirmAsync(Update update, ChatSession session)
+        //{
+        //    var reply = update.Message?.Text?.ToLower();
+        //    if (reply == "да")
+        //    {
+        //        var material = session.TempData["Material"];
+        //        var size = session.TempData["Size"];
+        //        await _bot.SendTextMessageAsync(update.GetChatId(), $"Заказ оформлен! Материал: {material}, размер: {size}");
+        //    }
+        //    else
+        //    {
+        //        await _bot.SendTextMessageAsync(update.GetChatId(), "Заказ отменён.");
+        //    }
+
+        //    session.ScenarioStep = "Start";
+        //    session.TempData.Clear();
+        //}
     }
 }
