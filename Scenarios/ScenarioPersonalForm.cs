@@ -7,10 +7,13 @@ using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
+
 using JFjewelery.Utility;
 using JFjewelery.Scenarios.Interfaces;
 using JFjewelery.Models;
 using JFjewelery.Services.Interfaces;
+using JFjewelery.Extensions;
 
 namespace JFjewelery.Scenarios
 {
@@ -29,48 +32,50 @@ namespace JFjewelery.Scenarios
 
 
             //TO DO
-            //_steps = new()
-            //{
-            //    ["Start"] = StepStartAsync,
-            //    ["Material"] = StepMaterialAsync,
-            //    ["Size"] = StepSizeAsync,
-            //    ["Confirm"] = StepConfirmAsync
-            //};
+            _steps = new()
+            {
+                ["Question1"] = StepQuestion1Async,
+                //["Material"] = StepMaterialAsync,
+                //["Size"] = StepSizeAsync,
+                //["Confirm"] = StepConfirmAsync
+            };
         }
 
         public string Name => "Personal form";
 
-        public async Task ExecuteAsync(Update update, CancellationToken cancellationToken)
-        {
-            // дщпшс
-        }
-
+        //Dictionaries for questions
 
         //TO DO
 
-        //public async Task ExecuteAsync(Update update, ChatSession session, CancellationToken cancellationToken = default)
-        //{
-        //    var chatId = update.CallbackQuery!.Message.Chat.Id;
-        //    var step = session.ScenarioStep ?? "Start";
-        //    if (!_steps.TryGetValue(step, out var handler))
-        //    {
-        //        await _bot.SendTextMessageAsync(update.GetChatId(), "Неизвестный шаг. Начинаем заново.");
-        //        session.ScenarioStep = "Start";
-        //        handler = StepStartAsync;
-        //    }
+        public async Task ExecuteAsync(Update update, ChatSession session, CancellationToken cancellationToken = default)
+        {
+            var chatId = update.GetChatId();
+            
+            var step = session.ScenarioStep ?? "Question1";
 
-        //    await handler(update, session);
-        //    session.LastUpdated = DateTime.UtcNow;
-        //    await _sessionService.UpdateAsync(session);
-        //}
+            if (!_steps.TryGetValue(step, out var handler))
+            {
+                await _botClient.SendTextMessageAsync(chatId, "Unknown step, restar the quiz");
+                session.ScenarioStep = "Question1";
+                handler = StepQuestion1Async;
+            }
+
+            await handler(update, session);
+            session.LastUpdated = DateTime.UtcNow;
+            await _sessionService.UpdateSessionAsync(session);
+        }
 
 
 
-        //private async Task StepStartAsync(Update update, ChatSession session)
-        //{
-        //    await _bot.SendTextMessageAsync(update.GetChatId(), "Какой материал украшения?");
-        //    session.ScenarioStep = "Material";
-        //}
+        private async Task StepQuestion1Async(Update update, ChatSession session)
+        {
+            var chatId = update.GetChatId();
+
+            await _botClient.SendTextMessageAsync(chatId, "Now I'm going to ask you a couple of magic questions - " +
+                "they will help you find the jewelry that suits you!");
+            await _botClient.SendTextMessageAsync(update.GetChatId(), "Какой материал украшения?");
+            session.ScenarioStep = "Material";
+        }
 
         //private async Task StepMaterialAsync(Update update, ChatSession session)
         //{
@@ -103,5 +108,7 @@ namespace JFjewelery.Scenarios
         //    session.ScenarioStep = "Start";
         //    session.TempData.Clear();
         //}
+
+
     }
 }

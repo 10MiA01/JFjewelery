@@ -8,13 +8,14 @@ using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-
-using JFjewelery.Services.Interfaces;
-using JFjewelery.Services;
-using JFjewelery.Scenarios;
-using JFjewelery.Scenarios.Interfaces;
 using Telegram.Bot.Types.ReplyMarkups;
 using Microsoft.Extensions.DependencyInjection;
+
+using JFjewelery.Services;
+using JFjewelery.Services.Interfaces;
+using JFjewelery.Scenarios;
+using JFjewelery.Scenarios.Interfaces;
+
 
 
 namespace JFjewelery.Utility
@@ -60,6 +61,8 @@ namespace JFjewelery.Utility
             var _customerService = scope.ServiceProvider.GetRequiredService<ICustomerService>();
             var _chatSessionService = scope.ServiceProvider.GetRequiredService<IChatSessionService>();
 
+
+            //For random message
             if (update.Type == UpdateType.Message && update.Message!.Text != null && update.Message?.Text != "/start")
             {
                 var chatId = update.Message.Chat.Id;
@@ -73,7 +76,7 @@ namespace JFjewelery.Utility
                     cancellationToken: cancellationToken);
             }
 
-            
+            //If /start
             if(update.Type == UpdateType.Message && update.Message?.Text == "/start")
             {
                 //Cheking if we have the customer, if not yet=>create, reset chat state
