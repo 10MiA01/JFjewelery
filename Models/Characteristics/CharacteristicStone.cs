@@ -28,6 +28,6 @@ namespace JFjewelery.Models.Characteristics
         public int? TypeId { get; set; }
         public JType? Type { get; set; }
 
-        public int Count { get; set; }
+        public int? Count { get; set; }
     }
 }

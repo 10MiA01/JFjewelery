@@ -24,6 +24,8 @@ namespace JFjewelery.Models
 
         public string? ScenarioStep { get; set; }
 
+        public string? FilterJson { get; set; }
+
         public string? TempData { get; set; }
 
         public DateTime? LastUpdated { get; set; }
