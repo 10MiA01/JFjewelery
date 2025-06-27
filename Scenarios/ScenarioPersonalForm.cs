@@ -47,10 +47,11 @@ namespace JFjewelery.Scenarios
 
         //TO DO
 
-        public async Task ExecuteAsync(Update update, ChatSession session, CancellationToken cancellationToken = default)
+        public async Task ExecuteAsync(Update update, CancellationToken cancellationToken)
         {
             var chatId = update.GetChatId();
-            
+            var session = await _sessionService.GetOrCteateSessionAsync(chatId)
+            ?? throw new Exception("Chat session not found");
             var step = session.ScenarioStep ?? "Question1";
 
             if (!_steps.TryGetValue(step, out var handler))

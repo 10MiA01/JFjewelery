@@ -21,14 +21,20 @@ namespace JFjewelery.Services
             _dbContext = dbContext;
         }
 
-        public async Task<ChatSession> GetOrCteateSessionAsync(int customerId)
+        public async Task<ChatSession> GetOrCteateSessionAsync(long chatId)
         {
-            var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customerId);
+            var customer = await _dbContext.Customers
+                .FirstOrDefaultAsync(c => c.ChatId == chatId);
+
+            if (customer == null)
+                throw new Exception("Customer not found");
+
+            var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id);
             if (session == null)
             {
                 session = new ChatSession
                 {
-                    CustomerId = customerId,
+                    CustomerId = customer.Id,
                     CurrentScenario = "Idle",
                     LastUpdated = DateTime.UtcNow
                 };
@@ -45,6 +51,7 @@ namespace JFjewelery.Services
             await _dbContext.SaveChangesAsync();
         }
 
+        //TO CORRECT long chatId
         public async Task ResetSessionAsync(int customerId)
         {
             var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customerId);
@@ -81,7 +88,7 @@ namespace JFjewelery.Services
             await _dbContext.SaveChangesAsync();
         }
 
-
+        //TO CORRECT long chatId
         public async Task UpdateFilterCriteriaAsync(int customerId, ProductFilterCriteria newCriteria, FilterOperation operation)
         {
             var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customerId)
@@ -184,7 +191,7 @@ namespace JFjewelery.Services
             
         }
 
-
+        //TO CORRECT long chatId
         public async Task<ProductFilterCriteria> GetExistingCriteriaAsync(int customerId)
         {
             var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customerId);

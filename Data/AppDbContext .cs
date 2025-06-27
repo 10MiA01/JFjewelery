@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 using JFjewelery.Models;
 using JFjewelery.Models.Characteristics;
+using JFjewelery.Models.Scenario;
 
 
 namespace JFjewelery.Data
@@ -45,6 +46,10 @@ namespace JFjewelery.Data
         public DbSet<JType> Type { get; set; }
         public DbSet<AppliesToEntity> AppliesToEntities { get; set; }
 
+        //Scenario tables
+        public DbSet<Scenario> Scenarios { get; set; }
+        public DbSet<Step> Steps { get; set; }
+        public DbSet<Option> Options { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -240,9 +245,422 @@ namespace JFjewelery.Data
                 }
             );
 
+            modelBuilder.Entity<Scenario>().HasData(
+                new Scenario { Id = 1, Name = "Personal form" },
+                new Scenario { Id = 2, Name = "Custom characteristics" },
+                new Scenario { Id = 3, Name = "Custom for an event "},
+                new Scenario { Id = 4, Name = "Custom by picture" },
+                new Scenario { Id = 5, Name = "Virtual fitting" }
+            );
+
+            //Scenario 1, steps
+            modelBuilder.Entity<Step>().HasData(
+                new Step 
+                {
+                    Id = 1, 
+                    Name="Stone", 
+                    QuestionText = "If you were a stone, what kind would you be?",
+                    NextStepId = 2,
+                    ScenarioId = 1,
+                },
+                new Step
+                {
+                    Id = 2,
+                    Name = "Season",
+                    QuestionText = "What is your favorite season?",
+                    NextStepId = 3,
+                    ScenarioId = 1,
+                },
+                new Step
+                {
+                    Id = 3,
+                    Name = "Archetype",
+                    QuestionText = "Which archetype best represents you?",
+                    NextStepId = 4,
+                    ScenarioId = 1,
+                },
+                new Step
+                {
+                    Id = 4,
+                    Name = "Music",
+                    QuestionText = "If your ideal piece of jewelry were music, what would it sound like?",
+                    NextStepId = 5,
+                    ScenarioId = 1,
+                },
+                new Step
+                {
+                    Id = 5,
+                    Name = "Scent",
+                    QuestionText = "If your ideal piece of jewelry had a scent, what would it be?",
+                    NextStepId = 6,
+                    ScenarioId = 1,
+                },
+                new Step
+                {
+                    Id = 6,
+                    Name = "Energy",
+                    QuestionText = "What kind of energy would you like your jewelry to amplify",
+                    NextStepId = 7,
+                    ScenarioId = 1,
+                },
+                new Step
+                {
+                    Id = 7,
+                    Name = "Power",
+                    QuestionText = "If your jewelry had a hidden power, what would it help you with?",
+                    ScenarioId = 1,
+                }
+
+             );
+
+            //Scenario 1, step 1, options
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 1,
+                    Name = "Diamond",
+                    Content = "Timeless, brilliant, and strong.",
+                    FilterJson = "{\"Stones\":[\"Diamond\"],\"StoneColors\":[\"White\"],\"StoneTypes\":[\"Precious\"],\"StoneShapes\":[\"Round\",\"Princess\"],\"StoneSizes\":[\"Medium\",\"Large\"],\"CountMin\":1}",
+                    StepId = 1
+                },
+                new Option
+                {
+                    Id = 2,
+                    Name = "Amethyst",
+                    Content = "Mysterious, spiritual, and creative.",
+                    FilterJson = "{\"Stones\":[\"Amethyst\"],\"StoneColors\":[\"Purple\"],\"StoneTypes\":[\"Semi-Precious\"],\"StoneShapes\":[\"Oval\",\"Marquise\"],\"StoneSizes\":[\"Medium\"],\"CountMin\":1}",
+                    StepId = 1
+                },
+                new Option
+                {
+                    Id = 3,
+                    Name = "Emerald",
+                    Content = "Natural, elegant, and deeply intuitive.",
+                    FilterJson = "{\"Stones\":[\"Emerald\"],\"StoneColors\":[\"Green\"],\"StoneTypes\":[\"Precious\"],\"StoneShapes\":[\"Emerald\",\"Cushion\"],\"StoneSizes\":[\"Medium\",\"Large\"],\"CountMin\":1}",
+                    StepId = 1
+                },
+                new Option
+                {
+                    Id = 4,
+                    Name = "Ruby",
+                    Content = "Passionate, bold, and full of energy.",
+                    FilterJson = "{\"Stones\":[\"Ruby\"],\"StoneColors\":[\"Red\"],\"StoneTypes\":[\"Precious\"],\"StoneShapes\":[\"Heart\",\"Oval\"],\"StoneSizes\":[\"Small\",\"Medium\"],\"CountMin\":1}",
+                    StepId = 1
+                },
+                new Option
+                {
+                    Id = 5,
+                    Name = "Sapphire",
+                    Content = "Calm, wise, and emotionally deep.",
+                    FilterJson = "{\"Stones\":[\"Sapphire\"],\"StoneColors\":[\"Blue\"],\"StoneTypes\":[\"Precious\"],\"StoneShapes\":[\"Round\",\"Cushion\"],\"StoneSizes\":[\"Medium\"],\"CountMin\":1}",
+                    StepId = 1
+                },
+                new Option
+                {
+                    Id = 6,
+                    Name = "Obsidian",
+                    Content = "Grounded, edgy, and protective.",
+                    FilterJson = "{\"Stones\":[\"Obsidian\"],\"StoneColors\":[\"Black\"],\"StoneTypes\":[\"Organic\"],\"StoneShapes\":[\"Oval\",\"Cabochon\"],\"StoneSizes\":[\"Large\"],\"CountMin\":1}",
+                    StepId = 1
+                }
+             );
+
+            //Scenario 1, step 2, options
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 7,
+                    Name = "Spring",
+                    Content = "Fresh, blooming, and full of life.",
+                    FilterJson = "{\"Styles\":[\"Floral\",\"Nature\"],\"MetalColors\":[\"Rose Gold\"],\"StoneColors\":[\"Pink\",\"Green\"],\"Stones\":[\"Peridot\",\"Rose Quartz\"],\"StoneTypes\":[\"Semi-Precious\"]}",
+                    StepId = 2
+                },
+                new Option
+                {
+                    Id = 8,
+                    Name = "Summer",
+                    Content = "Bright, vibrant, and radiant.",
+                    FilterJson = "{\"Styles\":[\"Bold\",\"Tropical\"],\"MetalColors\":[\"Yellow Gold\"],\"Stones\":[\"Topaz\",\"Citrine\"],\"StoneColors\":[\"Yellow\",\"Light Blue\"],\"MetalTypes\":[\"Polished\"]}",
+                    StepId = 2
+                },
+                new Option
+                {
+                    Id = 9,
+                    Name = "Autumn",
+                    Content = "Warm, rich, and earthy.",
+                    FilterJson = "{\"Styles\":[\"Vintage\",\"Boho\"],\"MetalColors\":[\"Copper\",\"Bronze\"],\"Stones\":[\"Garnet\",\"Tiger's Eye\"],\"StoneColors\":[\"Brown\",\"Red\",\"Orange\"],\"MetalTypes\":[\"Matte\"]}",
+                    StepId = 2
+                },
+                new Option
+                {
+                    Id = 10,
+                    Name = "Winter",
+                    Content = "Cool, calm, and sparkling.",
+                    FilterJson = "{\"Styles\":[\"Minimalist\",\"Classic\"],\"MetalColors\":[\"White Gold\",\"Silver\"],\"Stones\":[\"Diamond\",\"Sapphire\"],\"StoneColors\":[\"White\",\"Blue\"],\"StoneTypes\":[\"Precious\"],\"Purity\":925}",
+                    StepId = 2
+                }
+            );
+
+            //Scenario 1, step 3, options
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 11,
+                    Name = "The Sage",
+                    Content = "Seeker of truth and wisdom.",
+                    FilterJson = "{\"Styles\":[\"Classic\",\"Minimalist\"],\"MetalTypes\":[\"Brushed\"],\"Stones\":[\"Sapphire\"],\"StoneColors\":[\"Blue\"],\"StoneTypes\":[\"Precious\"],\"Purity\":925}",
+                    StepId = 3
+                },
+                new Option
+                {
+                    Id = 12,
+                    Name = "🛡The Warrior",
+                    Content = "Driven, focused, protective.",
+                    FilterJson = "{\"Styles\":[\"Bold\",\"Military\"],\"MetalTypes\":[\"Matte\"],\"Metals\":[\"Steel\",\"Titanium\"],\"WeightMin\":10,\"StoneTypes\":[\"None\"]}",
+                    StepId = 3
+                },
+                new Option
+                {
+                    Id = 13,
+                    Name = "The Explorer",
+                    Content = "Adventurous and independent.",
+                    FilterJson = "{\"Styles\":[\"Boho\",\"Rustic\"],\"Metals\":[\"Silver\"],\"StoneShapes\":[\"Raw\"],\"StoneColors\":[\"Green\",\"Brown\"],\"Stones\":[\"Tourmaline\",\"Agate\"]}",
+                    StepId = 3
+                },
+                new Option
+                {
+                    Id = 14,
+                    Name = "The Ruler",
+                    Content = "A natural leader and organizer.",
+                    FilterJson = "{\"Styles\":[\"Luxury\",\"Formal\"],\"Metals\":[\"Gold\"],\"MetalColors\":[\"Yellow Gold\"],\"Stones\":[\"Diamond\",\"Ruby\"],\"StoneTypes\":[\"Precious\"],\"Purity\":750}",
+                    StepId = 3
+                },
+                new Option
+                {
+                    Id = 15,
+                    Name = "The Creator",
+                    Content = "Imaginative, artistic, visionary.",
+                    FilterJson = "{\"Styles\":[\"Artistic\",\"Abstract\"],\"MetalColors\":[\"Mixed\"],\"Stones\":[\"Opal\",\"Amethyst\"],\"StoneColors\":[\"Violet\",\"Iridescent\"],\"StoneTypes\":[\"Semi-Precious\"]}",
+                    StepId = 3
+                },
+                new Option
+                {
+                    Id = 16,
+                    Name = "The Magician",
+                    Content = "Insightful, transformative, intuitive.",
+                    FilterJson = "{\"Styles\":[\"Mystic\",\"Elegant\"],\"Stones\":[\"Moonstone\",\"Labradorite\"],\"StoneColors\":[\"Grey\",\"Blue\"],\"MetalTypes\":[\"Oxidized\"],\"Description\":\"Spiritual focus\"}",
+                    StepId = 3
+                }
+            );
+
+            //Scenario 1, step 4, options
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 17,
+                    Name = "Smooth Jazz",
+                    Content = "Soulful, intimate, full of depth.",
+                    FilterJson = "{\"Styles\":[\"Romantic\",\"Elegant\"],\"Metals\":[\"Rose Gold\"],\"StoneColors\":[\"Deep Blue\",\"Purple\"],\"StoneTypes\":[\"Semi-Precious\"]}",
+                    StepId = 4
+                },
+                new Option
+                {
+                    Id = 18,
+                    Name = "🎛Electronic Beats",
+                    Content = "Modern, vibrant, full of energy.",
+                    FilterJson = "{\"Styles\":[\"Modern\",\"Edgy\"],\"MetalColors\":[\"Black\",\"Chrome\"],\"Metals\":[\"Titanium\"],\"Stones\":[\"Cubic Zirconia\"],\"StoneColors\":[\"Neon\"]}",
+                    StepId = 4
+                },
+                new Option
+                {
+                    Id = 19,
+                    Name = "Classical Symphony",
+                    Content = "Elegant, timeless, structured.",
+                    FilterJson = "{\"Styles\":[\"Classic\"],\"Metals\":[\"Gold\"],\"StoneTypes\":[\"Precious\"],\"Stones\":[\"Diamond\",\"Pearl\"],\"MetalTypes\":[\"Polished\"]}",
+                    StepId = 4
+                },
+                new Option
+                {
+                    Id = 20,
+                    Name = "Indie Acoustic",
+                    Content = "Gentle, personal, a bit nostalgic.",
+                    FilterJson = "{\"Styles\":[\"Vintage\",\"Rustic\"],\"Stones\":[\"Amber\",\"Moonstone\"],\"MetalColors\":[\"Copper\",\"Bronze\"],\"StoneColors\":[\"Soft White\",\"Honey\"]}",
+                    StepId = 4
+                },
+                new Option
+                {
+                    Id = 21,
+                    Name = "Ambient Silence",
+                    Content = "Minimalist, calming, introspective.",
+                    FilterJson = "{\"Styles\":[\"Minimalist\"],\"Metals\":[\"Silver\"],\"StoneTypes\":[],\"MetalTypes\":[\"Matte\"],\"WeightMax\":5}",
+                    StepId = 4
+                },
+                new Option
+                {
+                    Id = 22,
+                    Name = "World Fusion",
+                    Content = "Eclectic, rich with cultural textures.",
+                    FilterJson = "{\"Styles\":[\"Ethnic\",\"Boho\"],\"Stones\":[\"Turquoise\",\"Garnet\"],\"StoneColors\":[\"Red\",\"Green\",\"Blue\"],\"Metals\":[\"Mixed\"]}",
+                    StepId = 4
+                }
+            );
+
+            //Scenario 1, step 5, options
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 23,
+                    Name = "Floral",
+                    Content = "Soft, romantic, blooming with charm",
+                    StepId = 5,
+                    FilterJson = "{\"Styles\": [\"Romantic\"], \"StoneTypes\": [\"Semi-Precious\"], \"StoneColors\": [\"Pink\", \"Lavender\"]}"
+                },
+                new Option
+                {
+                    Id = 24,
+                    Name = "Woody",
+                    Content = "Earthy, grounded, with quiet strength",
+                    StepId = 5,
+                    FilterJson = "{\"MetalColors\": [\"Brown\", \"Copper\"], \"StoneShapes\": [\"Oval\", \"Cushion\"], \"StoneTypes\": [\"Natural\"]}"
+                },
+                new Option
+                {
+                    Id = 25,
+                    Name = "Oriental",
+                    Content = "Deep, spicy, mysterious",
+                    StepId = 5,
+                    FilterJson = "{\"StoneColors\": [\"Red\", \"Amber\"], \"MetalTypes\": [\"Engraved\"], \"Styles\": [\"Exotic\"]}"
+                },
+                new Option
+                {
+                    Id = 26,
+                    Name = "Oceanic",
+                    Content = "Fresh, clean, with a sense of freedom",
+                    StepId = 5,
+                    FilterJson = "{\"StoneColors\": [\"Blue\", \"Aqua\"], \"Styles\": [\"Marine\"], \"MetalColors\": [\"Silver\"]}"
+                },
+                new Option
+                {
+                    Id = 27,
+                    Name = "Powdery",
+                    Content = "Gentle, nostalgic, subtly elegant",
+                    StepId = 5,
+                    FilterJson = "{\"Styles\": [\"Vintage\"], \"StoneColors\": [\"Peach\", \"White\"], \"MetalShapes\": [\"Soft\"]}"
+                },
+                new Option
+                {
+                    Id = 28,
+                    Name = "Unscented (Minimalist)",
+                    Content = "Pure, simple, speaks without a trace",
+                    StepId = 5,
+                    FilterJson = "{\"Styles\": [\"Minimalist\"], \"StoneTypes\": [], \"MetalTypes\": [\"Plain\"], \"StoneColors\": [\"Clear\"]}"
+                }
+            );
+
+            //Scenario 1, step 6, options
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 29,
+                    Name = "Mystery",
+                    Content = "Subtle, intriguing, layered",
+                    StepId = 6,
+                    FilterJson = "{\"StoneTypes\": [\"Obsidian\", \"Amethyst\"], \"StoneColors\": [\"Black\", \"Purple\"], \"Styles\": [\"Mystic\"]}"
+                },
+                new Option
+                {
+                    Id = 30,
+                    Name = "Passion",
+                    Content = "Bold, fiery, full of emotion",
+                    StepId = 6,
+                    FilterJson = "{\"StoneColors\": [\"Red\"], \"Stones\": [\"Ruby\"], \"Styles\": [\"Dramatic\"], \"MetalColors\": [\"Gold\"]}"
+                },
+                new Option
+                {
+                    Id = 31,
+                    Name = "Lightness",
+                    Content = "Airy, carefree, joyful",
+                    StepId = 6,
+                    FilterJson = "{\"StoneColors\": [\"Pink\", \"Sky Blue\"], \"MetalTypes\": [\"Thin\"], \"Styles\": [\"Playful\"]}"
+                },
+                new Option
+                {
+                    Id = 32,
+                    Name = "Cool Elegance",
+                    Content = "Refined, distant, composed",
+                    StepId = 6,
+                    FilterJson = "{\"StoneColors\": [\"White\", \"Blue\"], \"Styles\": [\"Elegant\"], \"MetalColors\": [\"Platinum\", \"Silver\"]}"
+                },
+                new Option
+                {
+                    Id = 33,
+                    Name = "Playfulness",
+                    Content = "Fun, whimsical, unexpected",
+                    StepId = 6,
+                    FilterJson = "{\"StoneShapes\": [\"Heart\", \"Star\"], \"Styles\": [\"Fun\"], \"StoneColors\": [\"Multicolor\"]}"
+                },
+                new Option
+                {
+                    Id = 34,
+                    Name = "Confidence",
+                    Content = "Strong, assertive, unmistakable",
+                    StepId = 6,
+                    FilterJson = "{\"MetalTypes\": [\"Bold\"], \"Stones\": [\"Diamond\"], \"Styles\": [\"Statement\"], \"StoneColors\": [\"Clear\"]}"
+                }
+            );
 
 
-
+            //Scenario 1, step 7, options
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 35,
+                    Name = "Inner Clarity",
+                    Content = "Helping you see your true path",
+                    StepId = 7,
+                    FilterJson = "{\"StoneTypes\": [\"Quartz\"], \"StoneColors\": [\"Clear\"], \"Styles\": [\"Minimalist\"], \"Description\": \"Clarity and insight\"}"
+                },
+                new Option
+                {
+                    Id = 36,
+                    Name = "Courage",
+                    Content = "Giving you strength to speak and act boldly",
+                    StepId = 7,
+                    FilterJson = "{\"Stones\": [\"Ruby\"], \"StoneColors\": [\"Red\"], \"Styles\": [\"Bold\"], \"Description\": \"Confidence and assertiveness\"}"
+                },
+                new Option
+                {
+                    Id = 37,
+                    Name = "Protection",
+                    Content = "Guarding your energy and intentions",
+                    StepId = 7,
+                    FilterJson = "{\"Stones\": [\"Obsidian\"], \"StoneColors\": [\"Black\"], \"StoneTypes\": [\"Protective\"], \"Styles\": [\"Mystic\"]}"
+                },
+                new Option
+                {
+                    Id = 38,
+                    Name = "Love & Connection",
+                    Content = "Attracting deep bonds and warmth",
+                    StepId = 7,
+                    FilterJson = "{\"StoneColors\": [\"Pink\"], \"Stones\": [\"Rose Quartz\"], \"Styles\": [\"Romantic\"], \"Description\": \"Emotional connection\"}"
+                },
+                new Option
+                {
+                    Id = 39,
+                    Name = "Creativity",
+                    Content = "Sparking ideas and artistic flow",
+                    StepId = 7,
+                    FilterJson = "{\"StoneColors\": [\"Purple\"], \"Stones\": [\"Amethyst\"], \"Styles\": [\"Artistic\"], \"Description\": \"Imagination and inspiration\"}"
+                },
+                new Option
+                {
+                    Id = 40,
+                    Name = "Transformation",
+                    Content = "Guiding you through change with grace",
+                    StepId = 7,
+                    FilterJson = "{\"StoneColors\": [\"Blue\", \"Green\"], \"Stones\": [\"Labradorite\"], \"Styles\": [\"Mystic\"], \"Description\": \"Change and growth\"}"
+                }
+            );
 
 
 

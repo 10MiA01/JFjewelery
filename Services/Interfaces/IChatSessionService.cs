@@ -10,7 +10,7 @@ namespace JFjewelery.Services.Interfaces
 {
     public interface IChatSessionService
     {
-        Task<ChatSession> GetOrCteateSessionAsync(int customerId);
+        Task<ChatSession> GetOrCteateSessionAsync(long chatId);
         Task UpdateSessionAsync(ChatSession session);
         Task ResetSessionAsync(int customerId);
     }

@@ -13,8 +13,7 @@ namespace JFjewelery.Models.Scenario
         public int Id { get; set; }
         [Required]
         public string Name { get; set; }
-        public string StepKey { get; set; }
-        public string QuestionText { get; set; }\
+        public string QuestionText { get; set; }
 
         public int? NextStepId { get; set; }
         public Step? NextStep { get; set; }

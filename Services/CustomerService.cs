@@ -21,6 +21,8 @@ namespace JFjewelery.Services
             _botClient = botClient;
             _dbContext = dbContext;
         }
+
+        //TO CORRECT long chatId
         public async Task<Customer> GetOrCreateCustomerAsync(string telegramAcc)
         {
             var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.TelegramAcc == telegramAcc);
@@ -33,13 +35,13 @@ namespace JFjewelery.Services
             return customer;
         }
 
-
+        //TO CORRECT long chatId
         public async Task<ChatSession> GetChatSessionAsync(int customerId)
         {
             return await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customerId);
         }
 
-
+        //TO CORRECT long chatId
         public async Task SaveChatSessionAsync(int customerId, ChatSession state)
         {
             var existingSession = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customerId);

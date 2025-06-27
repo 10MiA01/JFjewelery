@@ -21,6 +21,8 @@ namespace JFjewelery.Models
         [Required]
         public string TelegramAcc { get; set; }
 
+        public long ChatId { get; set; }
+
         public ICollection<CustomerPaymentMethod> CustomerPaymentMethods { get; set; } = new List<CustomerPaymentMethod>();
         public ICollection<Order> Orders { get; set; } = new List<Order>();
     }
