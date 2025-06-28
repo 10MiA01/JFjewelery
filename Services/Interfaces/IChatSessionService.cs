@@ -12,6 +12,6 @@ namespace JFjewelery.Services.Interfaces
     {
         Task<ChatSession> GetOrCteateSessionAsync(long chatId);
         Task UpdateSessionAsync(ChatSession session);
-        Task ResetSessionAsync(int customerId);
+        Task ResetSessionAsync(long chatId);
     }
 }

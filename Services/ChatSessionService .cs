@@ -21,13 +21,12 @@ namespace JFjewelery.Services
             _dbContext = dbContext;
         }
 
+
+        // Customer is guaranteed to exist here due to prior GetOrCreateCustomerAsync
         public async Task<ChatSession> GetOrCteateSessionAsync(long chatId)
         {
             var customer = await _dbContext.Customers
                 .FirstOrDefaultAsync(c => c.ChatId == chatId);
-
-            if (customer == null)
-                throw new Exception("Customer not found");
 
             var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id);
             if (session == null)
@@ -51,13 +50,16 @@ namespace JFjewelery.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        //TO CORRECT long chatId
-        public async Task ResetSessionAsync(int customerId)
+        public async Task ResetSessionAsync(long chatId)
         {
-            var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customerId);
+            var customer = await _dbContext.Customers
+                .FirstOrDefaultAsync(c => c.ChatId == chatId);
+
+
+            var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id);
             if(session != null)
             {
-                session.CustomerId = customerId;
+                session.CustomerId = customer.Id;
                 session.CurrentScenario = null;
                 session.ScenarioStep = null;
                 session.FilterJson = null;
@@ -68,7 +70,7 @@ namespace JFjewelery.Services
             {
                 session = new ChatSession
                 {
-                    CustomerId = customerId,
+                    CustomerId = customer.Id,
                     CurrentScenario = "Idle",
                     LastUpdated = DateTime.UtcNow
                 };
@@ -78,9 +80,15 @@ namespace JFjewelery.Services
         }
 
         //Filter characteristics methods
-        public async Task ResetFilterCriteriaAsync(int customerId)
+        public async Task ResetFilterCriteriaAsync(long chatId)
         {
-            var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customerId)
+            var customer = await _dbContext.Customers
+                .FirstOrDefaultAsync(c => c.ChatId == chatId);
+
+            if (customer == null)
+                throw new Exception("Customer not found");
+
+            var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id)
                   ?? throw new Exception("Chat session not found");
 
             session.FilterJson = null;
@@ -88,13 +96,16 @@ namespace JFjewelery.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        //TO CORRECT long chatId
-        public async Task UpdateFilterCriteriaAsync(int customerId, ProductFilterCriteria newCriteria, FilterOperation operation)
+        public async Task UpdateFilterCriteriaAsync(long chatId, ProductFilterCriteria newCriteria, FilterOperation operation)
         {
-            var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customerId)
+            var customer = await _dbContext.Customers
+                .FirstOrDefaultAsync(c => c.ChatId == chatId);
+
+
+            var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id)
                   ?? throw new Exception("Chat session not found");
 
-            var existingCriteria = await GetExistingCriteriaAsync(customerId);
+            var existingCriteria = await GetExistingCriteriaAsync(customer.Id);
 
             UpdateGeneral(existingCriteria, newCriteria, operation);
             UpdateMetals(existingCriteria, newCriteria, operation);
@@ -191,10 +202,13 @@ namespace JFjewelery.Services
             
         }
 
-        //TO CORRECT long chatId
-        public async Task<ProductFilterCriteria> GetExistingCriteriaAsync(int customerId)
+
+        public async Task<ProductFilterCriteria> GetExistingCriteriaAsync(long chatId)
         {
-            var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customerId);
+            var customer = await _dbContext.Customers
+                .FirstOrDefaultAsync(c => c.ChatId == chatId);
+
+            var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id);
 
             //Desirialize existing criteria
             ProductFilterCriteria existingCriteria = new ProductFilterCriteria();

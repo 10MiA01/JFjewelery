@@ -22,41 +22,44 @@ namespace JFjewelery.Services
             _dbContext = dbContext;
         }
 
-        //TO CORRECT long chatId
-        public async Task<Customer> GetOrCreateCustomerAsync(string telegramAcc)
+
+        public async Task<Customer> GetOrCreateCustomerAsync(long chatId, string telegramAcc)
         {
-            var customer = await _dbContext.Customers.FirstOrDefaultAsync(c => c.TelegramAcc == telegramAcc);
+            var customer = await _dbContext.Customers
+                .FirstOrDefaultAsync(c => c.ChatId == chatId);
+
+
             if (customer == null)
             {
-                customer = new Customer { TelegramAcc = telegramAcc, Name = "Unknown" };
+                customer = new Customer 
+                { 
+                    ChatId = chatId , 
+                    TelegramAcc = telegramAcc, 
+                    Name = "Unknown" ,
+                    ChatSession = new ChatSession
+                    {
+                        CurrentScenario = "Idle",
+                        LastUpdated = DateTime.UtcNow
+                    }
+                };
                 _dbContext.Customers.Add(customer);
                 await _dbContext.SaveChangesAsync();
             }
             return customer;
         }
 
-        //TO CORRECT long chatId
-        public async Task<ChatSession> GetChatSessionAsync(int customerId)
+
+        // Customer is guaranteed to exist here due to prior GetOrCreateCustomerAsync
+        public async Task<ChatSession> GetChatSessionAsync(long chatId)
         {
-            return await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customerId);
+            var customer = await _dbContext.Customers
+                .FirstOrDefaultAsync(c => c.ChatId == chatId);
+
+            return await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id);
         }
 
-        //TO CORRECT long chatId
-        public async Task SaveChatSessionAsync(int customerId, ChatSession state)
-        {
-            var existingSession = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customerId);
-            if (existingSession == null)
-            {
-                _dbContext.ChatSessions.Add(state);
-            }
-            else
-            {
-                existingSession.CurrentScenario = state.CurrentScenario;
-                existingSession.ScenarioStep = state.ScenarioStep;
-                existingSession.TempData = state.TempData;
-                existingSession.LastUpdated = state.LastUpdated;
-            }
-        }
+        // Customer is guaranteed to exist here due to prior GetOrCreateCustomerAsync
+
 
     }
 }

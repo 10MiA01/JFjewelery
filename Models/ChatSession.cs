@@ -10,17 +10,15 @@ namespace JFjewelery.Models
 {
     public class ChatSession
     {
-        [Key]
-        public int Id { get; set; }
 
-        [Required]
+        [Key, ForeignKey("Customer")]
         public int CustomerId { get; set; }
 
         [ForeignKey("CustomerId")]
         public Customer Customer { get; set; } = null!;
 
         [Required]
-        public string CurrentScenario { get; set; } = "Idle";
+        public string? CurrentScenario { get; set; } = "Idle";
 
         public string? ScenarioStep { get; set; }
 

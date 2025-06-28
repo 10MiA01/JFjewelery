@@ -11,9 +11,9 @@ namespace JFjewelery.Services.Interfaces
 
     {
 
-        Task<Customer> GetOrCreateCustomerAsync(string telegramAcc);
-        Task<ChatSession> GetChatSessionAsync(int customerId);
-        Task SaveChatSessionAsync(int customerId, ChatSession state);
+        Task<Customer> GetOrCreateCustomerAsync(long chatId, string telegramAcc);
+        Task<ChatSession> GetChatSessionAsync(long chatId);
+        
 
     }
 }

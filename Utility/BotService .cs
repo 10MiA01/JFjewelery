@@ -15,6 +15,7 @@ using JFjewelery.Services;
 using JFjewelery.Services.Interfaces;
 using JFjewelery.Scenarios;
 using JFjewelery.Scenarios.Interfaces;
+using JFjewelery.Extensions;
 
 
 
@@ -65,7 +66,16 @@ namespace JFjewelery.Utility
             //For random message
             if (update.Type == UpdateType.Message && update.Message!.Text != null && update.Message?.Text != "/start")
             {
-                var chatId = update.Message.Chat.Id;
+                var telegramAcc = update.Message.From?.Username
+                    ?? update.Message.From?.Id.ToString();
+                var chatId = update.GetChatId();
+                if (telegramAcc != null)
+                {
+                    var customer = await _customerService.GetOrCreateCustomerAsync(chatId, telegramAcc);
+                    _chatSessionService.ResetSessionAsync(customer.Id);
+
+                }
+
                 var messageText = update.Message.Text;
 
                 Console.WriteLine($"Message from {chatId}: {messageText}");
@@ -82,10 +92,11 @@ namespace JFjewelery.Utility
                 //Cheking if we have the customer, if not yet=>create, reset chat state
                 var telegramAcc = update.Message.From?.Username
                     ?? update.Message.From?.Id.ToString();
+                var chatId = update.GetChatId();
 
                 if (telegramAcc != null)
                 {
-                    var customer = await _customerService.GetOrCreateCustomerAsync(telegramAcc);
+                    var customer = await _customerService.GetOrCreateCustomerAsync( chatId,telegramAcc);
                     _chatSessionService.ResetSessionAsync(customer.Id);
 
                 }
