@@ -18,8 +18,8 @@ namespace JFjewelery.Models.Scenario
         public int? NextStepId { get; set; }
         public Step? NextStep { get; set; }
 
-        public int? ScenarioId { get; set; }
-        public Scenario? Scenario { get; set; }
+        public int ScenarioId { get; set; }
+        public Scenario Scenario { get; set; }
 
         public List<Option> Options { get; set; } = new();
     }

@@ -17,7 +17,7 @@ namespace JFjewelery.Models.Scenario
         public string? Content { get; set; }
         public string? FilterJson { get; set; }
 
-        public int? StepId { get; set; }
-        public Step? Step { get; set; }
+        public int StepId { get; set; }
+        public Step Step { get; set; }
     }
 }

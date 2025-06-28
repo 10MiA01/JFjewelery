@@ -14,6 +14,9 @@ using JFjewelery.Scenarios.Interfaces;
 using JFjewelery.Models;
 using JFjewelery.Services.Interfaces;
 using JFjewelery.Extensions;
+using JFjewelery.Data;
+using JFjewelery.Models.Scenario;
+using Microsoft.EntityFrameworkCore;
 
 namespace JFjewelery.Scenarios
 {
@@ -21,29 +24,34 @@ namespace JFjewelery.Scenarios
     {
         private readonly ITelegramBotClient _botClient;
         private readonly IChatSessionService _sessionService;
+        private readonly AppDbContext _dbContext;
 
 
-        private readonly Dictionary<string, Func<Update, ChatSession, Task>> _steps;
+        public string _scenario;
+        private readonly List<Step> _steps;
+        private readonly List<Option> _options;
 
-        public ScenarioPersonalForm(ITelegramBotClient botClient, IChatSessionService sessionService)
+        public List<string> Names => new() { "Personal form", "Custom characteristics", "Custom for an event " };
+
+
+
+        public ScenarioPersonalForm(ITelegramBotClient botClient, IChatSessionService sessionService, AppDbContext dbContext)
         {
             _botClient = botClient;
             _sessionService = sessionService;
-
-
-            //TO DO
-            _steps = new()
-            {
-                ["Question1"] = StepQuestion1Async,
-                //["Material"] = StepMaterialAsync,
-                //["Size"] = StepSizeAsync,
-                //["Confirm"] = StepConfirmAsync
-            };
+            _dbContext = dbContext;
+            
+            _steps = dbContext.Steps
+                .Where(s => s.ScenarioId == 1)
+                .OrderBy(s => s.Id)
+                .ToList();
+            _options = dbContext.Options
+                .Where(o => _steps.Select(s => s.Id).Contains(o.StepId))
+                .ToList();
         }
 
-        public string Name => "Personal form";
+        
 
-        //Dictionaries for questions
 
         //TO DO
 
@@ -51,19 +59,19 @@ namespace JFjewelery.Scenarios
         {
             var chatId = update.GetChatId();
             var session = await _sessionService.GetOrCteateSessionAsync(chatId)
-            ?? throw new Exception("Chat session not found");
-            var step = session.ScenarioStep ?? "Question1";
+                ?? throw new Exception("Chat session not found");
 
-            if (!_steps.TryGetValue(step, out var handler))
+            _scenario = session.CurrentScenario;
+            
+            if(_scenario == null)
             {
-                await _botClient.SendTextMessageAsync(chatId, "Unknown step, restar the quiz");
-                session.ScenarioStep = "Question1";
-                handler = StepQuestion1Async;
+                _scenario = update.CallbackQuery.Data;
             }
 
-            await handler(update, session);
-            session.LastUpdated = DateTime.UtcNow;
-            await _sessionService.UpdateSessionAsync(session);
+            var step = _steps.FirstOrDefault(s => s.Name == session.ScenarioStep)
+                ?? _steps.OrderBy(s => s.Id).First();
+
+            
         }
 
 
@@ -78,37 +86,6 @@ namespace JFjewelery.Scenarios
             session.ScenarioStep = "Material";
         }
 
-        //private async Task StepMaterialAsync(Update update, ChatSession session)
-        //{
-        //    session.TempData["Material"] = update.Message?.Text;
-        //    await _bot.SendTextMessageAsync(update.GetChatId(), "Укажите размер:");
-        //    session.ScenarioStep = "Size";
-        //}
-
-        //private async Task StepSizeAsync(Update update, ChatSession session)
-        //{
-        //    session.TempData["Size"] = update.Message?.Text;
-        //    await _bot.SendTextMessageAsync(update.GetChatId(), "Подтвердите заказ: да/нет");
-        //    session.ScenarioStep = "Confirm";
-        //}
-
-        //private async Task StepConfirmAsync(Update update, ChatSession session)
-        //{
-        //    var reply = update.Message?.Text?.ToLower();
-        //    if (reply == "да")
-        //    {
-        //        var material = session.TempData["Material"];
-        //        var size = session.TempData["Size"];
-        //        await _bot.SendTextMessageAsync(update.GetChatId(), $"Заказ оформлен! Материал: {material}, размер: {size}");
-        //    }
-        //    else
-        //    {
-        //        await _bot.SendTextMessageAsync(update.GetChatId(), "Заказ отменён.");
-        //    }
-
-        //    session.ScenarioStep = "Start";
-        //    session.TempData.Clear();
-        //}
 
 
     }

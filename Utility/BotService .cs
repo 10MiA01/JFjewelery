@@ -16,6 +16,9 @@ using JFjewelery.Services.Interfaces;
 using JFjewelery.Scenarios;
 using JFjewelery.Scenarios.Interfaces;
 using JFjewelery.Extensions;
+using JFjewelery.Data;
+using Microsoft.EntityFrameworkCore;
+using JFjewelery.Models.Scenario;
 
 
 
@@ -58,9 +61,12 @@ namespace JFjewelery.Utility
 
             using var scope = _scopeFactory.CreateScope();
 
-            var _scenarios = scope.ServiceProvider.GetServices<IBotScenario>();
+            var _scenarioServices = scope.ServiceProvider.GetServices<IBotScenario>();
             var _customerService = scope.ServiceProvider.GetRequiredService<ICustomerService>();
             var _chatSessionService = scope.ServiceProvider.GetRequiredService<IChatSessionService>();
+            var _dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var _scenarios = await _dbContext.Scenarios.ToListAsync();
+
 
 
             //For random message
@@ -102,7 +108,9 @@ namespace JFjewelery.Utility
                 }
 
                 //Scenario buttons
-                var buttons = _scenarios.Select(s => InlineKeyboardButton.WithCallbackData(s.Name, s.Name)).ToArray();
+                var buttons = _scenarios
+                    .Select(s => InlineKeyboardButton.WithCallbackData(s.Name, s.Name))
+                    .ToArray();
                 var keyboard = new InlineKeyboardMarkup(buttons.Chunk(2));
 
 
@@ -117,16 +125,50 @@ namespace JFjewelery.Utility
             //Running the scenario
             else if (update.Type == UpdateType.CallbackQuery)
             {
-                var scenarioName = update.CallbackQuery.Data;
-                var scenario = _scenarios.FirstOrDefault(s => s.Name == scenarioName);
+                var telegramAcc = update.Message.From?.Username
+                    ?? update.Message.From?.Id.ToString();
+                var chatId = update.GetChatId();
+                var customer = await _customerService.GetOrCreateCustomerAsync(chatId, telegramAcc);
+                var session = customer.ChatSession;
+                var callbackData = update.CallbackQuery.Data;
 
-                if (scenario != null)
-                    await scenario.ExecuteAsync(update, cancellationToken);
+                var scenarioFromButton = _scenarios.FirstOrDefault(s => s.Name == callbackData);
+
+
+                if (session.CurrentScenario == null && scenarioFromButton != null)
+                {
+                    // Scenario is just selected
+                    session.CurrentScenario = scenarioFromButton.Name;
+                    session.ScenarioStep = null;
+                    await _chatSessionService.UpdateSessionAsync(session);
+
+                    var handler = _scenarioServices
+                        .FirstOrDefault(s => s.Names.Contains(session.CurrentScenario));
+
+                    if (handler != null)
+                    {
+                        await handler.ExecuteAsync(update, cancellationToken);
+                    }
+                }
+                else if (session.CurrentScenario != null)
+                {
+                    // Scenario is already selected => continue
+                    var handler = _scenarioServices
+                        .FirstOrDefault(s => s.Names.Contains(session.CurrentScenario));
+
+                    if (handler != null)
+                    {
+                        await handler.ExecuteAsync(update, cancellationToken);
+                    }
+                }
                 else
-                    await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "Option not found", cancellationToken: cancellationToken);
+                {
+                    await botClient.SendTextMessageAsync(
+                        chatId,
+                        "The selected option could not be recognized.",
+                        cancellationToken: cancellationToken);
+                }
             }
-
-
         }
 
         private Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)

@@ -14,7 +14,7 @@ namespace JFjewelery.Scenarios.Interfaces
 {
     public interface IBotScenario
     {
-        string Name { get; }
+        List<string> Names { get; }
         Task ExecuteAsync(Update update, CancellationToken cancellationToken);
     }
 }
