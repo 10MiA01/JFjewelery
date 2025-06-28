@@ -58,7 +58,7 @@ namespace JFjewelery.Services
             return await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id);
         }
 
-        // Customer is guaranteed to exist here due to prior GetOrCreateCustomerAsync
+
 
 
     }

@@ -48,6 +48,8 @@ class Program
                 //Services_SCOPED
                 services.AddScoped<ICustomerService, CustomerService>();
                 services.AddScoped<IChatSessionService, ChatSessionService>();
+                services.AddScoped<IButtonComposer, ButtonComposer>();
+                services.AddScoped<ICharacteristicsFilter, CharacteristicsFilter>();
 
                 //Bot-scenarios
                 services.AddScoped<IBotScenario, ScenarioPersonalForm>();

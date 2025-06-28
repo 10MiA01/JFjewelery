@@ -134,10 +134,9 @@ namespace JFjewelery.Utility
 
                 var scenarioFromButton = _scenarios.FirstOrDefault(s => s.Name == callbackData);
 
-
+                // Scenario is just selected
                 if (session.CurrentScenario == null && scenarioFromButton != null)
                 {
-                    // Scenario is just selected
                     session.CurrentScenario = scenarioFromButton.Name;
                     session.ScenarioStep = null;
                     await _chatSessionService.UpdateSessionAsync(session);
@@ -150,9 +149,10 @@ namespace JFjewelery.Utility
                         await handler.ExecuteAsync(update, cancellationToken);
                     }
                 }
+
+                // Scenario is already selected => continue
                 else if (session.CurrentScenario != null)
                 {
-                    // Scenario is already selected => continue
                     var handler = _scenarioServices
                         .FirstOrDefault(s => s.Names.Contains(session.CurrentScenario));
 
@@ -161,6 +161,8 @@ namespace JFjewelery.Utility
                         await handler.ExecuteAsync(update, cancellationToken);
                     }
                 }
+
+                //Other
                 else
                 {
                     await botClient.SendTextMessageAsync(

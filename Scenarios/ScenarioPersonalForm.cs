@@ -8,6 +8,9 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using System.Xml.Linq;
 
 using JFjewelery.Utility;
 using JFjewelery.Scenarios.Interfaces;
@@ -16,7 +19,11 @@ using JFjewelery.Services.Interfaces;
 using JFjewelery.Extensions;
 using JFjewelery.Data;
 using JFjewelery.Models.Scenario;
-using Microsoft.EntityFrameworkCore;
+using JFjewelery.Models.Filter;
+using JFjewelery.Models.Enums;
+
+using static JFjewelery.Services.ChatSessionService;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace JFjewelery.Scenarios
 {
@@ -27,27 +34,18 @@ namespace JFjewelery.Scenarios
         private readonly AppDbContext _dbContext;
 
 
-        public string _scenario;
-        private readonly List<Step> _steps;
-        private readonly List<Option> _options;
+        public Scenario _scenario;
+        public List<Step> _steps;
+        public List<Option> _options;
 
         public List<string> Names => new() { "Personal form", "Custom characteristics", "Custom for an event " };
-
-
 
         public ScenarioPersonalForm(ITelegramBotClient botClient, IChatSessionService sessionService, AppDbContext dbContext)
         {
             _botClient = botClient;
             _sessionService = sessionService;
             _dbContext = dbContext;
-            
-            _steps = dbContext.Steps
-                .Where(s => s.ScenarioId == 1)
-                .OrderBy(s => s.Id)
-                .ToList();
-            _options = dbContext.Options
-                .Where(o => _steps.Select(s => s.Id).Contains(o.StepId))
-                .ToList();
+   
         }
 
         
@@ -55,36 +53,78 @@ namespace JFjewelery.Scenarios
 
         //TO DO
 
-        public async Task ExecuteAsync(Update update, CancellationToken cancellationToken)
+        public async Task ExecuteAsync(Telegram.Bot.Types.Update update, CancellationToken cancellationToken)
         {
             var chatId = update.GetChatId();
             var session = await _sessionService.GetOrCteateSessionAsync(chatId)
                 ?? throw new Exception("Chat session not found");
+            var scenario = session.CurrentScenario;
+            _scenario = _dbContext.Scenarios
+                .Include(s => s.Steps)
+                    .ThenInclude(step => step.NextStep)
+                .FirstOrDefault(s => s.Name == scenario);
 
-            _scenario = session.CurrentScenario;
-            
-            if(_scenario == null)
+            _steps = _scenario.Steps.OrderBy(s => s.Id).ToList();
+
+            //Choosing a step
+            //If first step
+            if (session.ScenarioStep == null)
             {
-                _scenario = update.CallbackQuery.Data;
+                var firstStep = _steps.First();
+                session.ScenarioStep = firstStep.Name;
+                await _dbContext.SaveChangesAsync();
+
+                //Send a introductory message
+                await _botClient.SendTextMessageAsync(chatId, "Now I'm going to ask you a couple of magic questions - " +
+                "they will help you find the jewelry that suits you!");
+
+                //Compose buttons from options and send
+
             }
 
-            var step = _steps.FirstOrDefault(s => s.Name == session.ScenarioStep)
-                ?? _steps.OrderBy(s => s.Id).First();
+            //If next step
+            else if (session.ScenarioStep != null)
+            { 
+                //Get a step
+                var currentStep = _steps.Where(s => s.Name == session.ScenarioStep).FirstOrDefault();
+                var optionSelected = update.CallbackQuery.Data;
+                var currentOption = currentStep.Options.Where(o => o.Name == optionSelected).FirstOrDefault();
 
-            
+
+                //get and apply filters
+                ProductFilterCriteria filterFromClient = JsonSerializer.Deserialize<ProductFilterCriteria>(currentOption.FilterJson) ?? new ProductFilterCriteria();
+
+                await _sessionService.UpdateFilterCriteriaAsync(chatId, filterFromClient, FilterOperation.Add);
+
+                //Move to next step
+                if (currentStep.NextStep == null)
+                {
+                    await FinishForm(update);
+                    return;
+                }
+                else
+                {
+                    currentStep = currentStep.NextStep;
+                }
+
+                //Compose buttons from options and send
+
+            }
         }
 
-
-
-        private async Task StepQuestion1Async(Update update, ChatSession session)
+        public async Task FinishForm(Telegram.Bot.Types.Update update)
         {
             var chatId = update.GetChatId();
+            //Get the filter
+            var finishFilter = await _sessionService.GetFilterCriteriaAsync(chatId);
+            //Filter in db
 
-            await _botClient.SendTextMessageAsync(chatId, "Now I'm going to ask you a couple of magic questions - " +
-                "they will help you find the jewelry that suits you!");
-            await _botClient.SendTextMessageAsync(update.GetChatId(), "Какой материал украшения?");
-            session.ScenarioStep = "Material";
+            //send the products 
+
+            //Reset scenario
+            await _sessionService.ResetSessionAsync(chatId);
         }
+
 
 
 

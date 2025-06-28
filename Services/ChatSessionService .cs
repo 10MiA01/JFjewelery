@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+
 using JFjewelery.Data;
 using JFjewelery.Models;
 using JFjewelery.Models.Filter;
+using JFjewelery.Models.Enums;
 using JFjewelery.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
+
 
 namespace JFjewelery.Services
 {
@@ -80,6 +83,22 @@ namespace JFjewelery.Services
         }
 
         //Filter characteristics methods
+        public async Task<ProductFilterCriteria> GetFilterCriteriaAsync(long chatId)
+        {
+            var customer = await _dbContext.Customers
+                .FirstOrDefaultAsync(c => c.ChatId == chatId);
+
+            if (customer == null)
+                throw new Exception("Customer not found");
+
+            var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id)
+                  ?? throw new Exception("Chat session not found");
+
+            ProductFilterCriteria filterFromSession = JsonSerializer.Deserialize<ProductFilterCriteria>(session.FilterJson) ?? new ProductFilterCriteria();
+
+            return filterFromSession;
+        }
+
         public async Task ResetFilterCriteriaAsync(long chatId)
         {
             var customer = await _dbContext.Customers
@@ -105,7 +124,7 @@ namespace JFjewelery.Services
             var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id)
                   ?? throw new Exception("Chat session not found");
 
-            var existingCriteria = await GetExistingCriteriaAsync(customer.Id);
+            var existingCriteria = await GetOrCreateExistingCriteriaAsync(customer.Id);
 
             UpdateGeneral(existingCriteria, newCriteria, operation);
             UpdateMetals(existingCriteria, newCriteria, operation);
@@ -114,12 +133,6 @@ namespace JFjewelery.Services
             session.FilterJson = JsonSerializer.Serialize(existingCriteria);
 
             await _dbContext.SaveChangesAsync();
-        }
-
-        public enum FilterOperation
-        {
-            Add,
-            Remove
         }
 
         public void UpdateGeneral(ProductFilterCriteria target, ProductFilterCriteria source, FilterOperation operation)
@@ -203,25 +216,31 @@ namespace JFjewelery.Services
         }
 
 
-        public async Task<ProductFilterCriteria> GetExistingCriteriaAsync(long chatId)
+        public async Task<ProductFilterCriteria> GetOrCreateExistingCriteriaAsync(long chatId)
         {
             var customer = await _dbContext.Customers
                 .FirstOrDefaultAsync(c => c.ChatId == chatId);
 
             var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id);
 
-            //Desirialize existing criteria
+            //Create new criteria if doesn't exists
             ProductFilterCriteria existingCriteria = new ProductFilterCriteria();
-            if (!string.IsNullOrEmpty(session.FilterJson))
+            if (string.IsNullOrEmpty(session.FilterJson))
             {
-                existingCriteria = JsonSerializer.Deserialize<ProductFilterCriteria>(session.FilterJson) ?? new ProductFilterCriteria();
+                var newCriteria = new ProductFilterCriteria();
+                session.FilterJson = JsonSerializer.Serialize(newCriteria);
+                await _dbContext.SaveChangesAsync();
+                return newCriteria;
             }
+
+            //Desirialize existing criteria
+            existingCriteria = JsonSerializer.Deserialize<ProductFilterCriteria>(session.FilterJson) ?? new ProductFilterCriteria();
 
             return existingCriteria;
         }
 
         //Lists changings
-        private List<string> MergeLists(List<string>? original, List<string>? incoming)
+        public List<string> MergeLists(List<string>? original, List<string>? incoming)
         {
             var set = new HashSet<string>(original ?? new List<string>());
             if (incoming != null)
@@ -232,7 +251,7 @@ namespace JFjewelery.Services
             return set.ToList();
         }
 
-        private List<string> RemoveLists(List<string>? original, List<string>? incoming)
+        public List<string> RemoveLists(List<string>? original, List<string>? incoming)
         {
             var set = new HashSet<string>(original ?? new List<string>());
             if (incoming != null)
