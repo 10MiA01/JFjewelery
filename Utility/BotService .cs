@@ -125,8 +125,9 @@ namespace JFjewelery.Utility
             //Running the scenario
             else if (update.Type == UpdateType.CallbackQuery)
             {
-                var telegramAcc = update.Message.From?.Username
-                    ?? update.Message.From?.Id.ToString();
+                var telegramAcc = update.CallbackQuery.From?.Username
+                    ?? update.CallbackQuery.From?.Id.ToString();
+
                 var chatId = update.GetChatId();
                 var customer = await _customerService.GetOrCreateCustomerAsync(chatId, telegramAcc);
                 var session = customer.ChatSession;

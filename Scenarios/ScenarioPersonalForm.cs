@@ -19,7 +19,7 @@ using JFjewelery.Services.Interfaces;
 using JFjewelery.Extensions;
 using JFjewelery.Data;
 using JFjewelery.Models.Scenario;
-using JFjewelery.Models.Filter;
+using JFjewelery.Models.DTO;
 using JFjewelery.Models.Enums;
 
 using static JFjewelery.Services.ChatSessionService;
@@ -31,6 +31,7 @@ namespace JFjewelery.Scenarios
     {
         private readonly ITelegramBotClient _botClient;
         private readonly IChatSessionService _sessionService;
+        private readonly IButtonComposer _buttonComposer;
         private readonly AppDbContext _dbContext;
 
 
@@ -40,10 +41,11 @@ namespace JFjewelery.Scenarios
 
         public List<string> Names => new() { "Personal form", "Custom characteristics", "Custom for an event " };
 
-        public ScenarioPersonalForm(ITelegramBotClient botClient, IChatSessionService sessionService, AppDbContext dbContext)
+        public ScenarioPersonalForm(ITelegramBotClient botClient, IChatSessionService sessionService,IButtonComposer buttonComposer, AppDbContext dbContext)
         {
             _botClient = botClient;
             _sessionService = sessionService;
+            _buttonComposer = buttonComposer;
             _dbContext = dbContext;
    
         }
@@ -60,9 +62,12 @@ namespace JFjewelery.Scenarios
                 ?? throw new Exception("Chat session not found");
             var scenario = session.CurrentScenario;
             _scenario = _dbContext.Scenarios
-                .Include(s => s.Steps)
-                    .ThenInclude(step => step.NextStep)
-                .FirstOrDefault(s => s.Name == scenario);
+            .Include(s => s.Steps)
+                .ThenInclude(step => step.Options)
+            .Include(s => s.Steps)
+                .ThenInclude(step => step.NextStep)
+            .FirstOrDefault(s => s.Name == scenario);
+
 
             _steps = _scenario.Steps.OrderBy(s => s.Id).ToList();
 
@@ -78,7 +83,15 @@ namespace JFjewelery.Scenarios
                 await _botClient.SendTextMessageAsync(chatId, "Now I'm going to ask you a couple of magic questions - " +
                 "they will help you find the jewelry that suits you!");
 
-                //Compose buttons from options and send
+                //Compose buttons 
+                var keyboard =_buttonComposer.CreateKeyboard(firstStep);
+
+                //Send the message to the client
+                await _botClient.SendTextMessageAsync(
+                chatId: chatId,
+                text: $"{firstStep.QuestionText}",
+                replyMarkup: keyboard,
+                cancellationToken: cancellationToken);
 
             }
 
@@ -107,7 +120,16 @@ namespace JFjewelery.Scenarios
                     currentStep = currentStep.NextStep;
                 }
 
-                //Compose buttons from options and send
+                //Compose buttons 
+                var keyboard = _buttonComposer.CreateKeyboard(currentStep);
+
+                //Send the message to the client
+                await _botClient.SendTextMessageAsync(
+                chatId: chatId,
+                text: $"{currentStep.QuestionText}",
+                replyMarkup: keyboard,
+                cancellationToken: cancellationToken);
+
 
             }
         }

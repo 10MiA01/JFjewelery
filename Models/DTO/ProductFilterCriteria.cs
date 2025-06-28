@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JFjewelery.Models.Filter
+namespace JFjewelery.Models.DTO
 {
     public class ProductFilterCriteria
     {

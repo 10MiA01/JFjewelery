@@ -43,7 +43,13 @@ class Program
                 //DB context
                 var connectionString = configuration.GetConnectionString("DefaultConnection");
                 services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(connectionString));
+                    options.UseNpgsql(connectionString, npgsqlOptions =>
+                        npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                    ));
+
+                //Old config
+                //services.AddDbContext<AppDbContext>(options =>
+                //options.UseNpgsql(connectionString));
 
                 //Services_SCOPED
                 services.AddScoped<ICustomerService, CustomerService>();

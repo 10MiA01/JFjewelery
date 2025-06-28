@@ -26,6 +26,7 @@ namespace JFjewelery.Services
         public async Task<Customer> GetOrCreateCustomerAsync(long chatId, string telegramAcc)
         {
             var customer = await _dbContext.Customers
+                .Include(c => c.ChatSession)
                 .FirstOrDefaultAsync(c => c.ChatId == chatId);
 
 
@@ -38,13 +39,23 @@ namespace JFjewelery.Services
                     Name = "Unknown" ,
                     ChatSession = new ChatSession
                     {
-                        CurrentScenario = "Idle",
                         LastUpdated = DateTime.UtcNow
                     }
                 };
                 _dbContext.Customers.Add(customer);
                 await _dbContext.SaveChangesAsync();
             }
+            else if (customer.ChatSession == null)
+            {
+                customer.ChatSession = new ChatSession
+                {
+                    CustomerId = customer.Id,
+                    LastUpdated = DateTime.UtcNow,
+                };
+                _dbContext.ChatSessions.Add(customer.ChatSession);
+                await _dbContext.SaveChangesAsync();
+            }
+
             return customer;
         }
 

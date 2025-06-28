@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 using JFjewelery.Data;
 using JFjewelery.Models;
-using JFjewelery.Models.Filter;
+using JFjewelery.Models.DTO;
 using JFjewelery.Models.Enums;
 using JFjewelery.Services.Interfaces;
 

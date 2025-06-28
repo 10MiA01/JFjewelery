@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using JFjewelery.Models;
-using JFjewelery.Models.Filter;
+using JFjewelery.Models.DTO;
 using JFjewelery.Models.Enums;
 using static JFjewelery.Services.ChatSessionService;
 

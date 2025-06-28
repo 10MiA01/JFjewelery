@@ -17,8 +17,7 @@ namespace JFjewelery.Models
         [ForeignKey("CustomerId")]
         public Customer Customer { get; set; } = null!;
 
-        [Required]
-        public string? CurrentScenario { get; set; } = "Idle";
+        public string? CurrentScenario { get; set; } 
 
         public string? ScenarioStep { get; set; }
 
