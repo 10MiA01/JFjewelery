@@ -143,13 +143,34 @@ namespace JFjewelery.Scenarios
             //Get the filter
             var finishFilter = await _sessionService.GetFilterCriteriaAsync(chatId);
             //Filter in db
-            var top3Products = _characteristicsFilter.FilterMatchProductsAsync(finishFilter);
+            var top3Products = await _characteristicsFilter.FilterMatchProductsAsync(finishFilter);
             //send the products 
             await _botClient.SendTextMessageAsync(
                chatId: chatId,
                text: $"Here are product that's perfect match for you!",
-               replyMarkup: ,
                cancellationToken: cancellationToken);
+
+            foreach (var product in top3Products)
+            {
+                var imageUrl = product.Images.FirstOrDefault()?.FilePath;
+
+                if (!string.IsNullOrEmpty(imageUrl))
+                {
+                    await _botClient.SendPhotoAsync(
+                        chatId: chatId,
+                        photo: InputFile.FromUri(imageUrl), 
+                        caption: $"{product.Name}\nPrice: {product.Price}\nQuantity: {product.Quantity}",
+                        cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    await _botClient.SendTextMessageAsync(
+                        chatId: chatId,
+                        text: $"{product.Name}\nPrice: {product.Price}\nQuantity: {product.Quantity}",
+                        cancellationToken: cancellationToken);
+                }
+            }
+
             //Reset scenario
             await _sessionService.ResetSessionAsync(chatId);
         }

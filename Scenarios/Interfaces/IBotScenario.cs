@@ -16,6 +16,6 @@ namespace JFjewelery.Scenarios.Interfaces
     {
         List<string> Names { get; }
         Task ExecuteAsync(Update update, CancellationToken cancellationToken);
-        Task FinishForm(Update update);
+        Task FinishForm(Update update, CancellationToken cancellationToken);
     }
 }
