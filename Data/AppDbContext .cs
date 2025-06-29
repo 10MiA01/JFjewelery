@@ -94,7 +94,9 @@ namespace JFjewelery.Data
                 new Stone { Id = 4, Name = "Emerald" },
                 new Stone { Id = 5, Name = "Amethyst" },
                 new Stone { Id = 6, Name = "Topaz" },
-                new Stone { Id = 7, Name = "Spinel" }
+                new Stone { Id = 7, Name = "Spinel" },
+                new Stone { Id = 8, Name = "Pearl" },
+                new Stone { Id = 9, Name = "obsydian" }
             );
 
             modelBuilder.Entity<AppliesToEntity>().HasData(
@@ -153,7 +155,8 @@ namespace JFjewelery.Data
                 new Shape { Id = 9, Name = "Emerald Cut", AppliesToEntityId = 2 },
                 new Shape { Id = 10, Name = "Marquise Cut", AppliesToEntityId = 2 },
                 new Shape { Id = 11, Name = "Oval", AppliesToEntityId = 2 },
-                new Shape { Id = 12, Name = "Round", AppliesToEntityId = 2 }
+                new Shape { Id = 12, Name = "Round", AppliesToEntityId = 2 },
+                new Shape { Id = 13, Name = "Rectangle", AppliesToEntityId = 2 }
             );
 
             modelBuilder.Entity<JType>().HasData(
@@ -185,11 +188,25 @@ namespace JFjewelery.Data
             );
 
             modelBuilder.Entity<Product>().HasData(
-                new Product { Id = 1, Name = "Ruby rose", CategoryId = 2, Quantity = 10, Price=5000 }
+                new Product { Id = 1, Name = "Ruby rose", CategoryId = 2, Quantity = 10, Price=5000 },
+                new Product { Id = 2, Name = "Stained glass", CategoryId = 2, Quantity = 10, Price = 1000 },
+                new Product { Id = 3, Name = "Pink treasure", CategoryId = 2, Quantity = 10, Price = 4000 },
+                new Product { Id = 4, Name = "Lara's wish", CategoryId = 4, Quantity = 10, Price = 1500 },
+                new Product { Id = 5, Name = "Sweet bird", CategoryId = 2, Quantity = 10, Price = 2000 },
+                new Product { Id = 6, Name = "Marine rope", CategoryId = 2, Quantity = 10, Price = 1000 },
+                new Product { Id = 7, Name = "Sea tear", CategoryId = 1, Quantity = 10, Price = 2000 },
+                new Product { Id = 8, Name = "Demon's eye", CategoryId = 1, Quantity = 10, Price = 3000 }
                 );
 
             modelBuilder.Entity<ProductImage>().HasData(
-                new ProductImage { Id = 1, ProductId = 1, FileName = "prod_1_front_1.jpg" }
+                new ProductImage { Id = 1, ProductId = 1, FileName = "prod_1_front_1.jpg" },
+                new ProductImage { Id = 2, ProductId = 2, FileName = "prod_2_front_1.jpg" },
+                new ProductImage { Id = 3, ProductId = 3, FileName = "prod_3_front_1.jpg" },
+                new ProductImage { Id = 4, ProductId = 4, FileName = "prod_4_front_1.jpg" },
+                new ProductImage { Id = 5, ProductId = 5, FileName = "prod_5_front_1.jpg" },
+                new ProductImage { Id = 6, ProductId = 6, FileName = "prod_6_front_1.jpg" },
+                new ProductImage { Id = 7, ProductId = 7, FileName = "prod_7_front_1.jpg" },
+                new ProductImage { Id = 8, ProductId = 8, FileName = "prod_8_front_1.jpg" }
                 );
 
             modelBuilder.Entity<Characteristic>().HasData(
@@ -200,6 +217,61 @@ namespace JFjewelery.Data
                     Gender = "Women",
                     Style = "Classic",
                     Manufacturer = "JFjewelery"
+                },
+                new Characteristic
+                {
+                    Id = 2,
+                    ProductId = 2,
+                    Gender = "Both",
+                    Style = "Vintage",
+                    Manufacturer = "JFjewelery"
+                },
+                new Characteristic
+                {
+                    Id = 3,
+                    ProductId = 3,
+                    Gender = "Women",
+                    Style = "Romantic",
+                    Manufacturer = "JFjewelery"
+                },
+                new Characteristic
+                {
+                    Id = 4,
+                    ProductId = 4,
+                    Gender = "Women",
+                    Style = "Minimalistic",
+                    Manufacturer = "JFjewelery"
+                }, new Characteristic
+                {
+                    Id = 5,
+                    ProductId = 5,
+                    Gender = "Women",
+                    Style = "Classic",
+                    Manufacturer = "JFjewelery"
+                },
+                new Characteristic
+                {
+                    Id = 6,
+                    ProductId = 6,
+                    Gender = "Women",
+                    Style = "Minimalism",
+                    Manufacturer = "JFjewelery"
+                },
+                new Characteristic
+                {
+                    Id = 7,
+                    ProductId = 7,
+                    Gender = "Women",
+                    Style = "Minimalism",
+                    Manufacturer = "JFjewelery"
+                },
+                new Characteristic
+                {
+                    Id = 8,
+                    ProductId = 8,
+                    Gender = "Men",
+                    Style = "Vintage",
+                    Manufacturer = "JFjewelery"
                 }
             );
 
@@ -209,15 +281,94 @@ namespace JFjewelery.Data
                     Id = 1,
                     CharacteristicId = 1,
                     MetalId = 1,        // Gold
-                    ColorId = 1,        // Yellow
+                    ColorId = 2,        // Gold
                     ShapeId = 3,        // Oval
                     SizeId = 2,         // Medium
                     TypeId = 1,         // Gold
                     Purity = 585,
-                    Weight = 10f
+                    Weight = 25
+                },
+                new CharacteristicMetal
+                {
+                    Id = 2,
+                    CharacteristicId = 2,
+                    MetalId = 2,        // Silver
+                    ColorId = 1,        // Silver
+                    SizeId = 2,         // Medium
+                    TypeId = 2,         // Silver
+                    Purity = 585,
+                    Weight = 10
+                },
+                new CharacteristicMetal
+                {
+                    Id = 3,
+                    CharacteristicId = 3,
+                    MetalId = 1,        // Gold
+                    ColorId = 2,        // Gold
+                    SizeId = 1,         // Small
+                    TypeId = 1,         // Gold
+                    Purity = 585,
+                    Weight = 10
+                },
+                new CharacteristicMetal
+                {
+                    Id = 4,
+                    CharacteristicId = 4,
+                    MetalId = 1,        // Gold
+                    ColorId = 2,        // Gold
+                    SizeId = 2,         // Medium
+                    TypeId = 1,         // Gold
+                    Purity = 585,
+                    Weight = 20
+                },
+                new CharacteristicMetal
+                {
+                    Id = 5,
+                    CharacteristicId = 5,
+                    MetalId = 1,        // Gold
+                    ColorId = 2,        // Gold
+                    ShapeId = 2,        // Square
+                    SizeId = 3,         // Large
+                    TypeId = 1,         // Gold
+                    Purity = 585,
+                    Weight = 50
+                },
+                new CharacteristicMetal
+                {
+                    Id = 6,
+                    CharacteristicId = 6,
+                    MetalId = 1,        // Gold
+                    ColorId = 2,        // Gold
+                    SizeId = 2,         // Medium
+                    TypeId = 1,         // Gold
+                    Purity = 585,
+                    Weight = 15
+                },
+                new CharacteristicMetal
+                {
+                    Id = 7,
+                    CharacteristicId = 7,
+                    MetalId = 2,        // Silver
+                    ColorId = 1,        // Silver
+                    SizeId = 2,         // Medium
+                    TypeId = 2,         // Silver
+                    Purity = 585,
+                    Weight = 10
+                },
+                new CharacteristicMetal
+                {
+                    Id = 8,
+                    CharacteristicId = 8,
+                    MetalId = 1,        // Gold
+                    ColorId = 2,        // Gold
+                    SizeId = 2,         // Medium
+                    TypeId = 1,         // Gold
+                    Purity = 585,
+                    Weight = 20
                 }
             );
 
+            //Product 1
             modelBuilder.Entity<CharacteristicStone>().HasData(
                 new CharacteristicStone
                 {
@@ -231,6 +382,7 @@ namespace JFjewelery.Data
                 }
             );
 
+            //Product 1
             modelBuilder.Entity<CharacteristicStone>().HasData(
                 new CharacteristicStone
                 {
@@ -238,10 +390,165 @@ namespace JFjewelery.Data
                     CharacteristicId = 1,
                     StoneId = 7,       // Spinel
                     ShapeId = 12,       // Round
+                    ColorId = 14,       // White
+                    TypeId = 9,         //Pure
+                    SizeId = 4,        // Tiny (stone)
+                    Count = 62
+                }
+            );
+            
+            //Product 2
+            modelBuilder.Entity<CharacteristicStone>().HasData(
+                new CharacteristicStone
+                {
+                    Id = 3,
+                    CharacteristicId = 2,
+                    StoneId = 1,       
+                    ShapeId = 13,       // Rectangle
                     ColorId = 14,       // Whit
                     TypeId = 9,         //Pure
+                    SizeId = 4,        // Tiny (stone)
+                    Count = 4
+                },
+                new CharacteristicStone
+                {
+                    Id = 4,
+                    CharacteristicId = 2,
+                    StoneId = 2,
+                    ShapeId = 13,       // Rectangle
+                    ColorId = 7,       // Red
+                    TypeId = 9,         //Pure
+                    SizeId = 4,        // Tiny (stone)
+                    Count = 4
+                },
+                new CharacteristicStone
+                {
+                    Id = 5,
+                    CharacteristicId = 2,
+                    StoneId = 3,
+                    ShapeId = 13,       // Rectangle
+                    ColorId = 8,       // Blue
+                    TypeId = 9,         //Pure
                     SizeId = 5,        // Tiny (stone)
-                    Count = 62
+                    Count = 4
+                },
+                new CharacteristicStone
+                {
+                    Id = 6,
+                    CharacteristicId = 2,
+                    StoneId = 5,
+                    ShapeId = 13,       // Rectangle
+                    ColorId = 12,       // Purple
+                    TypeId = 9,         //Pure
+                    SizeId = 5,        // Tiny (stone)
+                    Count = 4
+                }
+            );
+
+            //Product 3
+            modelBuilder.Entity<CharacteristicStone>().HasData(
+                new CharacteristicStone
+                {
+                    Id = 7,
+                    CharacteristicId = 3,
+                    StoneId = 7,       // Spinel
+                    ShapeId = 12,       // Round
+                    ColorId = 11,       // Pink
+                    TypeId = 9,         //Pure
+                    SizeId = 4,        // Tiny (stone)
+                    Count = 8
+                }
+            );
+
+            //Product 4
+            modelBuilder.Entity<CharacteristicStone>().HasData(
+                new CharacteristicStone
+                {
+                    Id = 8,
+                    CharacteristicId = 4,
+                    StoneId = 1,       // Diamond
+                    ShapeId = 12,       // Round
+                    ColorId = 14,       // White
+                    TypeId = 10,         //Translucent
+                    SizeId = 4,        // Tiny (stone)
+                    Count = 5
+                }
+            );
+
+            //Product 5
+            modelBuilder.Entity<CharacteristicStone>().HasData(
+                new CharacteristicStone
+                {
+                    Id = 9,
+                    CharacteristicId = 5,
+                    StoneId = 3,       // Saphire
+                    ShapeId = 13,       // Rectangle
+                    ColorId = 11,       // Pink
+                    TypeId = 9,         //Pure
+                    SizeId = 6,        // Big (stone)
+                    Count = 2
+                },
+                new CharacteristicStone
+                {
+                    Id = 10,
+                    CharacteristicId = 5,
+                    StoneId = 7,       // Spinel
+                    ShapeId = 13,       // Rectangle
+                    ColorId = 14,       // White
+                    TypeId = 10,         //Translucent
+                    SizeId = 5,        // Regular (stone)
+                    Count = 2
+                }
+            );
+
+            //Product 7
+            modelBuilder.Entity<CharacteristicStone>().HasData(
+                new CharacteristicStone
+                {
+                    Id = 11,
+                    CharacteristicId = 7,
+                    StoneId = 8,       // Pearl
+                    ShapeId = 12,       // Round
+                    ColorId = 14,       // White
+                    TypeId = 7,         //Milky
+                    SizeId = 5,        // Regular (stone)
+                    Count = 1
+                },
+                new CharacteristicStone
+                {
+                    Id = 12,
+                    CharacteristicId = 7,
+                    StoneId = 1,       // Diamond
+                    ShapeId = 12,       // Round
+                    ColorId = 14,       // White
+                    TypeId = 10,         //Translucent
+                    SizeId = 4,        // Tiny (stone)
+                    Count = 1
+                }
+            );
+
+            //Product 8
+            modelBuilder.Entity<CharacteristicStone>().HasData(
+                new CharacteristicStone
+                {
+                    Id = 13,
+                    CharacteristicId = 8,
+                    StoneId = 2,       // Ruby
+                    ShapeId = 12,       // Round
+                    ColorId = 7,       // Red
+                    TypeId = 9,         //Pure
+                    SizeId = 5,        // Regular (stone)
+                    Count = 1
+                },
+                new CharacteristicStone
+                {
+                    Id = 14,
+                    CharacteristicId = 8,
+                    StoneId = 9,       // Obsidian
+                    ShapeId = 12,       // Round
+                    ColorId = 15,       // Black
+                    SizeId = 4,        // Tiny (stone)
+                    Count = 12
                 }
             );
 

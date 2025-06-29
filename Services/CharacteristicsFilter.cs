@@ -68,7 +68,7 @@ namespace JFjewelery.Services
             }
 
             var top3Products = productMatches
-                .OrderByDescending(p = productMatches.Values)
+                .OrderByDescending(p => p.Value)
                 .Take(3)
                 .Select(p => p.Key)
                 .ToList();
