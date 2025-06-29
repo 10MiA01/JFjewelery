@@ -969,6 +969,272 @@ namespace JFjewelery.Data
                 }
             );
 
+            //Scenario 2, steps
+            modelBuilder.Entity<Step>().HasData(
+                new Step
+                {
+                    Id = 8,
+                    Name = "Occasion",
+                    QuestionText = "What is the occasion?",
+                    NextStepId = 9,
+                    ScenarioId = 2,
+                },
+                new Step
+                {
+                    Id = 9,
+                    Name = "Mood",
+                    QuestionText = "What mood do you want to express",
+                    NextStepId = 10,
+                    ScenarioId = 2,
+                },
+                new Step
+                {
+                    Id = 10,
+                    Name = "Clothing",
+                    QuestionText = "What style of clothing do you plan to wear?",
+                    NextStepId = 11,
+                    ScenarioId = 2,
+                },
+                new Step
+                {
+                    Id = 11,
+                    Name = "Metal",
+                    QuestionText = "What metal do you prefer?",
+                    NextStepId = 12,
+                    ScenarioId = 2,
+                },
+                new Step
+                {
+                    Id = 12,
+                    Name = "Type of jewelry",
+                    QuestionText = "What type of jewelry are you interested in?",
+                    ScenarioId = 2,
+                }
+
+             );
+
+            //Scenario 2, step 1, options (Ocasion)
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 41,
+                    Name = "Wedding",
+                    Content = "Elegant and timeless styles for your special day.",
+                    FilterJson = "{\"Styles\":[\"Classic\",\"Elegant\"],\"Metals\":[\"Gold\",\"Platinum\"],\"Stones\":[\"Diamond\"],\"StoneTypes\":[\"Precious\"],\"StoneColors\":[\"White\"],\"StoneShapes\":[\"Round\",\"Princess\"],\"StoneSizes\":[\"Medium\",\"Large\"]}",
+                    StepId = 8
+                },
+                new Option
+                {
+                    Id = 42,
+                    Name = "Birthday",
+                    Content = "Colorful and joyful jewelry to celebrate you.",
+                    FilterJson = "{\"Styles\":[\"Playful\",\"Modern\"],\"Metals\":[\"Silver\",\"Gold\"],\"Stones\":[\"Amethyst\",\"Topaz\",\"Citrine\"],\"StoneTypes\":[\"Semi-Precious\"],\"StoneColors\":[\"Purple\",\"Blue\",\"Yellow\"],\"StoneShapes\":[\"Oval\",\"Heart\"],\"StoneSizes\":[\"Medium\"]}",
+                    StepId = 8
+                },
+                new Option
+                {
+                    Id = 43,
+                    Name = "Corporate event",
+                    Content = "Minimalistic and professional designs for a refined look.",
+                    FilterJson = "{\"Styles\":[\"Minimalist\",\"Modern\",\"Elegant\"],\"Metals\":[\"Silver\",\"White Gold\"],\"StoneColors\":[\"White\",\"Black\",\"Blue\"],\"StoneSizes\":[\"Small\"],\"StoneTypes\":[\"Precious\",\"Semi-Precious\"]}",
+                    StepId = 8
+                },
+                new Option
+                {
+                    Id = 44,
+                    Name = "Romantic evening",
+                    Content = "Charming pieces to make hearts flutter.",
+                    FilterJson = "{\"Styles\":[\"Romantic\",\"Vintage\"],\"Metals\":[\"Rose Gold\",\"Gold\"],\"Stones\":[\"Ruby\",\"Sapphire\",\"Diamond\"],\"StoneColors\":[\"Red\",\"Pink\"],\"StoneShapes\":[\"Heart\",\"Oval\"],\"StoneSizes\":[\"Medium\"]}",
+                    StepId = 8
+                },
+                new Option
+                {
+                    Id = 45,
+                    Name = "Just want to treat myself",
+                    Content = "Unique and expressive styles that reflect you.",
+                    FilterJson = "{\"Styles\":[\"Boho\",\"Art Deco\",\"Modern\"],\"Metals\":[\"Silver\",\"Gold\",\"Mixed\"],\"Stones\":[\"Obsidian\",\"Labradorite\",\"Turquoise\"],\"StoneTypes\":[\"Organic\",\"Semi-Precious\"],\"StoneColors\":[\"Black\",\"Blue\",\"Green\"],\"StoneSizes\":[\"Medium\",\"Large\"]}",
+                    StepId = 8
+                }
+            );
+
+            // Scenario 2, Step 2, options (Mood selection)
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 46,
+                    Name = "Bright and noticeable",
+                    Content = "Bold and colorful pieces that draw attention.",
+                    FilterJson = "{\"Styles\":[\"Bold\",\"Colorful\"],\"StoneColors\":[\"Red\",\"Yellow\",\"Turquoise\"],\"StoneSizes\":[\"Large\"],\"Metals\":[\"Gold\",\"Rose Gold\"]}",
+                    StepId = 9
+                },
+                new Option
+                {
+                    Id = 47,
+                    Name = "Subtle and elegant",
+                    Content = "Simple, clean, and graceful designs.",
+                    FilterJson = "{\"Styles\":[\"Minimalist\",\"Elegant\"],\"StoneColors\":[\"White\",\"Blue\",\"Black\"],\"StoneSizes\":[\"Small\"],\"Metals\":[\"Silver\",\"White Gold\"]}",
+                    StepId = 9
+                },
+                new Option
+                {
+                    Id = 48,
+                    Name = "Soft and romantic",
+                    Content = "Delicate pieces with gentle tones and curves.",
+                    FilterJson = "{\"Styles\":[\"Romantic\",\"Vintage\"],\"StoneColors\":[\"Pink\",\"Peach\",\"Purple\"],\"StoneShapes\":[\"Heart\",\"Oval\"],\"StoneSizes\":[\"Medium\"],\"Metals\":[\"Rose Gold\"]}",
+                    StepId = 9
+                },
+                new Option
+                {
+                    Id = 49,
+                    Name = "Luxurious and striking",
+                    Content = "Statement jewelry for special moments.",
+                    FilterJson = "{\"Styles\":[\"Luxury\",\"Statement\"],\"Stones\":[\"Diamond\",\"Ruby\",\"Emerald\"],\"StoneColors\":[\"White\",\"Red\",\"Green\"],\"StoneSizes\":[\"Large\"],\"Metals\":[\"Platinum\",\"Gold\"]}",
+                    StepId = 9
+                },
+                new Option
+                {
+                    Id = 50,
+                    Name = "Versatile for any situation",
+                    Content = "Classic designs that suit any look.",
+                    FilterJson = "{\"Styles\":[\"Classic\",\"Universal\"],\"StoneColors\":[\"Neutral\",\"White\",\"Blue\"],\"StoneSizes\":[\"Medium\"],\"Metals\":[\"Silver\",\"Gold\"]}",
+                    StepId = 9
+                }
+            );
+
+            // Scenario 2, Step 3, options (Clothing style)
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 51,
+                    Name = "Evening dress",
+                    Content = "Perfect for formal events and glamorous evenings.",
+                    FilterJson = "{\"Styles\":[\"Elegant\",\"Luxury\"],\"Stones\":[\"Diamond\",\"Sapphire\"],\"StoneSizes\":[\"Medium\",\"Large\"],\"Metals\":[\"Gold\",\"Platinum\"]}",
+                    StepId = 10
+                },
+                new Option
+                {
+                    Id = 52,
+                    Name = "Business style",
+                    Content = "Discreet and refined jewelry for a professional look.",
+                    FilterJson = "{\"Styles\":[\"Minimalist\",\"Classic\"],\"StoneColors\":[\"White\",\"Blue\",\"Black\"],\"StoneSizes\":[\"Small\"],\"Metals\":[\"Silver\",\"White Gold\"]}",
+                    StepId = 10
+                },
+                new Option
+                {
+                    Id = 53,
+                    Name = "Casual everyday",
+                    Content = "Comfortable and easy-to-match accessories.",
+                    FilterJson = "{\"Styles\":[\"Casual\",\"Simple\"],\"StoneColors\":[\"Neutral\",\"Light Blue\"],\"StoneSizes\":[\"Small\",\"Medium\"],\"Metals\":[\"Silver\"]}",
+                    StepId = 10
+                },
+                new Option
+                {
+                    Id = 54,
+                    Name = "Smart casual",
+                    Content = "Stylish and versatile pieces that elevate your outfit.",
+                    FilterJson = "{\"Styles\":[\"Smart\",\"Modern\"],\"StoneColors\":[\"Green\",\"Beige\"],\"StoneSizes\":[\"Medium\"],\"Metals\":[\"Rose Gold\",\"Gold\"]}",
+                    StepId = 10
+                },
+                new Option
+                {
+                    Id = 55,
+                    Name = "Not sure / Doesn’t matter",
+                    Content = "Let us surprise you with something universally flattering.",
+                    FilterJson = "{\"Styles\":[\"Universal\",\"Classic\"],\"StoneSizes\":[\"Medium\"],\"Metals\":[\"Silver\",\"Gold\"]}",
+                    StepId = 10
+                }
+            );
+
+            // Scenario 2, Step 4, options (Preferred metal)
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 56,
+                    Name = "Gold",
+                    Content = "Warm and timeless, perfect for any skin tone.",
+                    FilterJson = "{\"Metals\":[\"Gold\"]}",
+                    StepId = 11
+                },
+                new Option
+                {
+                    Id = 57,
+                    Name = "Silver",
+                    Content = "Cool, elegant, and versatile for all occasions.",
+                    FilterJson = "{\"Metals\":[\"Silver\"]}",
+                    StepId = 11
+                },
+                new Option
+                {
+                    Id = 58,
+                    Name = "Platinum",
+                    Content = "Rare and durable, ideal for luxury lovers.",
+                    FilterJson = "{\"Metals\":[\"Platinum\"]}",
+                    StepId = 11
+                },
+                new Option
+                {
+                    Id = 59,
+                    Name = "Dark metal / Oxidized",
+                    Content = "Edgy and bold, great for making a statement.",
+                    FilterJson = "{\"MetalColors\":[\"Dark\",\"Oxidized\"]}",
+                    StepId = 11
+                },
+                new Option
+                {
+                    Id = 60,
+                    Name = "No preference",
+                    Content = "We’ll show you a mix of beautiful metal options.",
+                    FilterJson = "{}",
+                    StepId = 11
+                }
+            );
+
+            // Scenario 2, Step 5, options (Type of jewelry)
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 61,
+                    Name = "Ring",
+                    Content = "Classic or statement pieces to enhance any look.",
+                    FilterJson = "{\"Types\":[\"Ring\"]}",
+                    StepId = 12
+                },
+                new Option
+                {
+                    Id = 62,
+                    Name = "Necklace",
+                    Content = "From delicate chains to bold pendants.",
+                    FilterJson = "{\"Types\":[\"Necklace\"]}",
+                    StepId = 12
+                },
+                new Option
+                {
+                    Id = 63,
+                    Name = "Bracelet",
+                    Content = "Perfect for layering or wearing solo.",
+                    FilterJson = "{\"Types\":[\"Bracelet\"]}",
+                    StepId = 12
+                },
+                new Option
+                {
+                    Id = 64,
+                    Name = "Earrings",
+                    Content = "Studs, hoops, or chandeliers to match any outfit.",
+                    FilterJson = "{\"Types\":[\"Earrings\"]}",
+                    StepId = 12
+                },
+                new Option
+                {
+                    Id = 65,
+                    Name = "No preference",
+                    Content = "We’ll show a mix of beautiful jewelry types.",
+                    FilterJson = "{}",
+                    StepId = 12
+                }
+            );
+
+
+
 
 
 
