@@ -29,6 +29,7 @@ namespace JFjewelery.Models
 
         [Required]
         public int Price { get; set; }
+        public Characteristic Characteristic { get; set; }
 
         public ICollection<OrderProduct> OrderProducts { get; set; } = new List<OrderProduct>();
         public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();

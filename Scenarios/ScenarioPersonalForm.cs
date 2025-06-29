@@ -24,6 +24,7 @@ using JFjewelery.Models.Enums;
 
 using static JFjewelery.Services.ChatSessionService;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using System.Threading;
 
 namespace JFjewelery.Scenarios
 {
@@ -32,6 +33,7 @@ namespace JFjewelery.Scenarios
         private readonly ITelegramBotClient _botClient;
         private readonly IChatSessionService _sessionService;
         private readonly IButtonComposer _buttonComposer;
+        private readonly ICharacteristicsFilter _characteristicsFilter;
         private readonly AppDbContext _dbContext;
 
 
@@ -41,11 +43,12 @@ namespace JFjewelery.Scenarios
 
         public List<string> Names => new() { "Personal form", "Custom characteristics", "Custom for an event " };
 
-        public ScenarioPersonalForm(ITelegramBotClient botClient, IChatSessionService sessionService,IButtonComposer buttonComposer, AppDbContext dbContext)
+        public ScenarioPersonalForm(ITelegramBotClient botClient, IChatSessionService sessionService,IButtonComposer buttonComposer, ICharacteristicsFilter characteristicsFilter, AppDbContext dbContext)
         {
             _botClient = botClient;
             _sessionService = sessionService;
             _buttonComposer = buttonComposer;
+            _characteristicsFilter = characteristicsFilter;
             _dbContext = dbContext;
    
         }
@@ -112,7 +115,7 @@ namespace JFjewelery.Scenarios
                 //Move to next step
                 if (currentStep.NextStep == null)
                 {
-                    await FinishForm(update);
+                    await FinishForm(update, cancellationToken);
                     return;
                 }
                 else
@@ -134,15 +137,19 @@ namespace JFjewelery.Scenarios
             }
         }
 
-        public async Task FinishForm(Telegram.Bot.Types.Update update)
+        public async Task FinishForm(Telegram.Bot.Types.Update update, CancellationToken cancellationToken)
         {
             var chatId = update.GetChatId();
             //Get the filter
             var finishFilter = await _sessionService.GetFilterCriteriaAsync(chatId);
             //Filter in db
-
+            var top3Products = _characteristicsFilter.FilterMatchProductsAsync(finishFilter);
             //send the products 
-
+            await _botClient.SendTextMessageAsync(
+               chatId: chatId,
+               text: $"Here are product that's perfect match for you!",
+               replyMarkup: ,
+               cancellationToken: cancellationToken);
             //Reset scenario
             await _sessionService.ResetSessionAsync(chatId);
         }
