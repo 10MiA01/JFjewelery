@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using JFjewelery.Models;
 using JFjewelery.Models.Characteristics;
 using JFjewelery.Models.Scenario;
+using System.Reflection.PortableExecutable;
 
 
 namespace JFjewelery.Data
@@ -554,8 +555,8 @@ namespace JFjewelery.Data
 
             modelBuilder.Entity<Scenario>().HasData(
                 new Scenario { Id = 1, Name = "Personal form" },
-                new Scenario { Id = 2, Name = "Custom characteristics" },
-                new Scenario { Id = 3, Name = "Custom for an event "},
+                new Scenario { Id = 2, Name = "Custom for an event" },
+                new Scenario { Id = 3, Name = "Custom characteristics"}, 
                 new Scenario { Id = 4, Name = "Custom by picture" },
                 new Scenario { Id = 5, Name = "Virtual fitting" }
             );
@@ -1232,6 +1233,334 @@ namespace JFjewelery.Data
                     StepId = 12
                 }
             );
+
+
+            // Scenario 3, steps
+            modelBuilder.Entity<Step>().HasData(
+                new Step
+                {
+                    Id = 13,
+                    Name = "Jewelry Type",
+                    QuestionText = "What type of jewelry would you like to design?",
+                    NextStepId = 14,
+                    ScenarioId = 3
+                },
+                new Step
+                {
+                    Id = 14,
+                    Name = "Base Metal",
+                    QuestionText = "What metal do you prefer for the base?",
+                    NextStepId = 15,
+                    ScenarioId = 3
+                },
+                new Step
+                {
+                    Id = 15,
+                    Name = "Metal Color",
+                    QuestionText = "What color or finish should the metal have?",
+                    NextStepId = 16,
+                    ScenarioId = 3
+                },
+                new Step
+                {
+                    Id = 16,
+                    Name = "Add Stones",
+                    QuestionText = "Would you like to add any stones?",
+                    NextStepId = 17,
+                    ScenarioId = 3
+                },
+                new Step
+                {
+                    Id = 17,
+                    Name = "Stone Shape & Size",
+                    QuestionText = "What shape and size should the stones be?",
+                    NextStepId = 18,
+                    ScenarioId = 3
+                },
+                new Step
+                {
+                    Id = 18,
+                    Name = "Design Style",
+                    QuestionText = "Do you have a preferred design or motif?",
+                    ScenarioId = 3
+                }
+            );
+
+            // Scenario 3, Step 1 (Jewelry Type) options
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 66,
+                    Name = "Ring",
+                    Content = "A timeless piece for any occasion.",
+                    FilterJson = "{\"ProductTypes\": [\"Ring\"]}",
+                    StepId = 13
+                },
+                new Option
+                {
+                    Id = 67,
+                    Name = "Necklace",
+                    Content = "Elegant and expressive centerpiece.",
+                    FilterJson = "{\"ProductTypes\": [\"Necklace\"]}",
+                    StepId = 13
+                },
+                new Option
+                {
+                    Id = 68,
+                    Name = "Earrings",
+                    Content = "Perfect for adding a touch of sparkle.",
+                    FilterJson = "{\"ProductTypes\": [\"Earrings\"]}",
+                    StepId = 13
+                },
+                new Option
+                {
+                    Id = 69,
+                    Name = "Bracelet",
+                    Content = "Stylish and comfortable for everyday or formal wear.",
+                    FilterJson = "{\"ProductTypes\": [\"Bracelet\"]}",
+                    StepId = 13
+                },
+                new Option
+                {
+                    Id = 70,
+                    Name = "Pendant",
+                    Content = "Simple, symbolic, and beautiful.",
+                    FilterJson = "{\"ProductTypes\": [\"Pendant\"]}",
+                    StepId = 13
+                }
+            );
+
+            // Scenario 3, Step 2 (Base Metal) options
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 71,
+                    Name = "Gold",
+                    Content = "Warm and classic, ideal for timeless pieces.",
+                    FilterJson = "{\"Metals\": [\"Gold\"]}",
+                    StepId = 14
+                },
+                new Option
+                {
+                    Id = 72,
+                    Name = "Silver",
+                    Content = "Bright and elegant, perfect for versatile looks.",
+                    FilterJson = "{\"Metals\": [\"Silver\"]}",
+                    StepId = 14
+                },
+                new Option
+                {
+                    Id = 73,
+                    Name = "Platinum",
+                    Content = "Rare and durable, a symbol of lasting value.",
+                    FilterJson = "{\"Metals\": [\"Platinum\"]}",
+                    StepId = 14
+                },
+                new Option
+                {
+                    Id = 74,
+                    Name = "Rose Gold",
+                    Content = "Romantic and modern with a warm tone.",
+                    FilterJson = "{\"MetalColors\": [\"Rose\"]}",
+                    StepId = 14
+                },
+                new Option
+                {
+                    Id = 75,
+                    Name = "Oxidized / Dark Metal",
+                    Content = "Unique and bold, ideal for statement designs.",
+                    FilterJson = "{\"MetalColors\": [\"Oxidized\", \"Dark\"]}",
+                    StepId = 14
+                }
+            );
+
+            // Scenario 3, Step 3 (Metal Color) options
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 76,
+                    Name = "Yellow Gold",
+                    Content = "Classic warm tone, timeless and elegant.",
+                    FilterJson = "{\"MetalColors\":[\"Yellow\"]}",
+                    StepId = 15
+                },
+                new Option
+                {
+                    Id = 77,
+                    Name = "White Gold",
+                    Content = "Modern and sleek silver-like finish.",
+                    FilterJson = "{\"MetalColors\":[\"White\"]}",
+                    StepId = 15
+                },
+                new Option
+                {
+                    Id = 78,
+                    Name = "Rose Gold",
+                    Content = "Soft pinkish hue, romantic and trendy.",
+                    FilterJson = "{\"MetalColors\":[\"Rose\"]}",
+                    StepId = 15
+                },
+                new Option
+                {
+                    Id = 79,
+                    Name = "Matte Finish",
+                    Content = "Subtle, non-reflective surface for understated elegance.",
+                    FilterJson = "{\"MetalFinishes\":[\"Matte\"]}",
+                    StepId = 15
+                },
+                new Option
+                {
+                    Id = 80,
+                    Name = "Polished Shine",
+                    Content = "Bright and glossy finish for maximum brilliance.",
+                    FilterJson = "{\"MetalFinishes\":[\"Polished\"]}",
+                    StepId = 15
+                },
+                new Option
+                {
+                    Id = 81,
+                    Name = "No preference",
+                    Content = "Any metal color or finish is fine.",
+                    FilterJson = "{}",
+                    StepId = 15
+                }
+            );
+
+            // Scenario 3, Step 4 (Add Stones) options
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 82,
+                    Name = "Yes, add diamonds",
+                    Content = "Classic sparkle with timeless diamonds.",
+                    FilterJson = "{\"Stones\": [\"Diamond\"]}",
+                    StepId = 16
+                },
+                new Option
+                {
+                    Id = 83,
+                    Name = "Yes, add colored gemstones",
+                    Content = "Add vibrant color with sapphires, rubies, or emeralds.",
+                    FilterJson = "{\"Stones\": [\"Sapphire\", \"Ruby\", \"Emerald\"]}",
+                    StepId = 16
+                },
+                new Option
+                {
+                    Id = 84,
+                    Name = "Yes, add pearls",
+                    Content = "Soft elegance with natural pearls.",
+                    FilterJson = "{\"Stones\": [\"Pearl\"]}",
+                    StepId = 16
+                },
+                new Option
+                {
+                    Id = 85,
+                    Name = "No stones",
+                    Content = "Keep it simple and elegant without stones.",
+                    FilterJson = "{}",
+                    StepId = 16
+                }
+            );
+
+            // Scenario 3, Step 5 (Stone Shape & Size) options
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 86,
+                    Name = "Round, Medium",
+                    Content = "Classic round shape, medium size for versatile use.",
+                    FilterJson = "{\"StoneShapes\": [\"Round\"], \"StoneSizes\": [\"Regular\"]}",
+                    StepId = 17
+                },
+                new Option
+                {
+                    Id = 87,
+                    Name = "Oval, Large",
+                    Content = "Elegant oval shape with large size for statement pieces.",
+                    FilterJson = "{\"StoneShapes\": [\"Oval\"], \"StoneSizes\": [\"Large\"]}",
+                    StepId = 17
+                },
+                new Option
+                {
+                    Id = 88,
+                    Name = "Princess, Small",
+                    Content = "Square princess cut, small size for subtle sparkle.",
+                    FilterJson = "{\"StoneShapes\": [\"Princess\"], \"StoneSizes\": [\"Tiny\"]}",
+                    StepId = 17
+                },
+                new Option
+                {
+                    Id = 89,
+                    Name = "Mixed shapes and sizes",
+                    Content = "A combination of different shapes and sizes for a unique design.",
+                    FilterJson = "{\"StoneShapes\": [\"Round\", \"Oval\", \"Princess\"], \"StoneSizes\": [\"Tiny\", \"Regular\", \"Large\"]}",
+                    StepId = 17
+                },
+                new Option
+                {
+                    Id = 90,
+                    Name = "No preference",
+                    Content = "I’m open to any shape or size.",
+                    FilterJson = "{}",
+                    StepId = 17
+                }
+            );
+
+            // Scenario 3, Step 6 (Design Style) options — using Styles
+            modelBuilder.Entity<Option>().HasData(
+                new Option
+                {
+                    Id = 91,
+                    Name = "Classic",
+                    Content = "Timeless designs with elegant details.",
+                    FilterJson = "{\"Styles\":[\"Classic\"]}",
+                    StepId = 18
+                },
+                new Option
+                {
+                    Id = 92,
+                    Name = "Modern",
+                    Content = "Clean lines and minimalist shapes.",
+                    FilterJson = "{\"Styles\":[\"Modern\"]}",
+                    StepId = 18
+                },
+                new Option
+                {
+                    Id = 93,
+                    Name = "Vintage",
+                    Content = "Inspired by antique and retro aesthetics.",
+                    FilterJson = "{\"Styles\":[\"Vintage\"]}",
+                    StepId = 18
+                },
+                new Option
+                {
+                    Id = 94,
+                    Name = "Floral",
+                    Content = "Motifs featuring flowers and nature.",
+                    FilterJson = "{\"Styles\":[\"Floral\"]}",
+                    StepId = 18
+                },
+                new Option
+                {
+                    Id = 95,
+                    Name = "Geometric",
+                    Content = "Bold shapes and angular patterns.",
+                    FilterJson = "{\"Styles\":[\"Geometric\"]}",
+                    StepId = 18
+                },
+                new Option
+                {
+                    Id = 96,
+                    Name = "No preference",
+                    Content = "I’m open to any design style.",
+                    FilterJson = "{}",
+                    StepId = 18
+                }
+            );
+
+
+
+
 
 
 
