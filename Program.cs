@@ -1,17 +1,12 @@
 ﻿using System;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Telegram.Bot;
-using Telegram.Bot.Polling;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
-using Telegram.Bot.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Telegram.Bot;
 
 
 using JFjewelery.Utility;
@@ -29,67 +24,45 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        //Configuration by host
-        var host = Host.CreateDefaultBuilder(args)
-            .ConfigureAppConfiguration((context, config) =>
+        var builder = WebApplication.CreateBuilder(args);
+
+        var configuration = builder.Configuration;
+
+        // Telegram bot
+        var botToken = configuration["TelegramBot:Token"];
+        builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botToken));
+
+        // DB context
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(connectionString, npgsqlOptions =>
             {
-                config.SetBasePath(Directory.GetCurrentDirectory());
-                config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
             })
-            .ConfigureServices((context, services) =>
-            {
-                var configuration = context.Configuration;
-                
-                //Bot in DI
-                var botToken = configuration["TelegramBot:Token"];
-                services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botToken));
+            .EnableSensitiveDataLogging()
+        );
 
-                //DB context
-                var connectionString = configuration.GetConnectionString("DefaultConnection");
-                services.AddDbContext<AppDbContext>(options =>
-                    options.UseNpgsql(connectionString, npgsqlOptions =>
-                    {
-                        npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+        // Services
+        builder.Services.AddScoped<ICustomerService, CustomerService>();
+        builder.Services.AddScoped<IChatSessionService, ChatSessionService>();
+        builder.Services.AddScoped<IButtonComposer, ButtonComposer>();
+        builder.Services.AddScoped<ICharacteristicsFilter, CharacteristicsFilter>();
+        builder.Services.AddScoped<IBotScenario, ScenarioPersonalForm>();
 
-                    })
-                    .EnableSensitiveDataLogging()
-                    );
+        // Bot background service
+        builder.Services.AddHostedService<BotService>();
 
-                //Old config
-                //services.AddDbContext<AppDbContext>(options =>
-                //options.UseNpgsql(connectionString));
+        var app = builder.Build();
 
-                //Services_SCOPED
-                services.AddScoped<ICustomerService, CustomerService>();
-                services.AddScoped<IChatSessionService, ChatSessionService>();
-                services.AddScoped<IButtonComposer, ButtonComposer>();
-                services.AddScoped<ICharacteristicsFilter, CharacteristicsFilter>();
+        // 👉 Подключаем статические файлы из папки Media
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(
+                Path.Combine(Directory.GetCurrentDirectory(), "Media")),
+            RequestPath = "/Media"
+        });
 
-                //Bot-scenarios
-                services.AddScoped<IBotScenario, ScenarioPersonalForm>();
-
-
-                //Add bot to host
-                services.AddHostedService<BotService>();
-            })
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.Configure(app =>
-                {
-                    // Static files from Media
-                    app.UseStaticFiles(new StaticFileOptions
-                    {
-                        FileProvider = new PhysicalFileProvider(
-                            Path.Combine(Directory.GetCurrentDirectory(), "Media")),
-                        RequestPath = "/Media"
-                    });
-                });
-
-                // Servder accessed by url
-                webBuilder.UseUrls("http://localhost:5000");
-            })
-            .Build();
-
-        await host.RunAsync();
+        await app.RunAsync();
     }
 }
+
