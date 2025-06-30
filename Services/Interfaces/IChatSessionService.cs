@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telegram.Bot;
+using Telegram.Bot.Polling;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using JFjewelery.Models;
 using JFjewelery.Models.DTO;
 using JFjewelery.Models.Enums;
@@ -13,7 +18,7 @@ namespace JFjewelery.Services.Interfaces
 {
     public interface IChatSessionService
     {
-        Task<ChatSession> GetOrCteateSessionAsync(long chatId);
+        Task<ChatSession> GetOrCteateSessionAsync(Update update);
         Task UpdateSessionAsync(ChatSession session);
         Task ResetSessionAsync(long chatId);
         Task<ProductFilterCriteria> GetFilterCriteriaAsync(long chatId);

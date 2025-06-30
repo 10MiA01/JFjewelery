@@ -130,102 +130,97 @@ namespace JFjewelery.Services
                 Gender = characteristic?.Gender,
 
                 Styles = string.IsNullOrEmpty(characteristic?.Style)
-                ? new List<string>()
+                    ? new List<string>()
                     : new List<string> { characteristic.Style },
 
-
-                Manufacturers = string.IsNullOrEmpty(characteristic.Manufacturer)
-                ? new List<string>()
+                Manufacturers = string.IsNullOrEmpty(characteristic?.Manufacturer)
+                    ? new List<string>()
                     : new List<string> { characteristic.Manufacturer },
 
+                Description = characteristic?.Description,
 
-                Description = product.Characteristic.Description,
-
-                //For Metals
+                // Metals
                 Metals = characteristic?.Metals?
-                        .Select(m => m.Metal.Name)
-                        .Where(name => !string.IsNullOrEmpty(name))
-                        .Distinct()
-                .ToList(),
-
-
+                    .Select(m => m.Metal?.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .Distinct()
+                    .ToList() ?? new List<string>(),
 
                 MetalShapes = characteristic?.Metals?
-                        .Select(m => m.Shape.Name)
-                        .Where(name => !string.IsNullOrEmpty(name))
-                        .Distinct()
-                .ToList(),
+                    .Select(m => m.Shape?.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .Distinct()
+                    .ToList() ?? new List<string>(),
 
                 MetalColors = characteristic?.Metals?
-                        .Select(m => m.Color.Name)
-                        .Where(name => !string.IsNullOrEmpty(name))
-                        .Distinct()
-                .ToList(),
+                    .Select(m => m.Color?.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .Distinct()
+                    .ToList() ?? new List<string>(),
 
                 MetalSizes = characteristic?.Metals?
-                        .Select(m => m.Size.Name)
-                        .Where(name => !string.IsNullOrEmpty(name))
-                        .Distinct()
-                        .ToList(),
+                    .Select(m => m.Size?.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .Distinct()
+                    .ToList() ?? new List<string>(),
 
                 MetalTypes = characteristic?.Metals?
-                        .Select(m => m.Type.Name)
-                        .Where(name => !string.IsNullOrEmpty(name))
-                        .Distinct()
-                        .ToList(),
+                    .Select(m => m.Type?.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .Distinct()
+                    .ToList() ?? new List<string>(),
 
                 Purity = characteristic?.Metals?
                     .Where(m => m.Purity.HasValue)
                     .Select(m => m.Purity.Value)
                     .FirstOrDefault(),
 
-
-
                 WeightMin = characteristic?.Metals?
-                        .Where(m => m.Weight.HasValue)
-                        .Min(m => m.Weight),
+                    .Where(m => m.Weight.HasValue)
+                    .Min(m => m.Weight) ?? 0,
 
                 WeightMax = characteristic?.Metals?
-                        .Where(m => m.Weight.HasValue)
-                        .Max(m => m.Weight),
+                    .Where(m => m.Weight.HasValue)
+                    .Max(m => m.Weight) ?? 0,
 
-                //For Stones
+                // Stones
                 Stones = characteristic?.Stones?
-                        .Select(s => s.Stone?.Name)
-                        .Where(name => !string.IsNullOrEmpty(name))
-                        .Distinct()
-                        .ToList(),
+                    .Select(s => s.Stone?.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .Distinct()
+                    .ToList() ?? new List<string>(),
 
                 StoneShapes = characteristic?.Stones?
-                        .Select(s => s.Shape?.Name)
-                        .Where(name => !string.IsNullOrEmpty(name))
-                        .Distinct()
-                        .ToList(),
+                    .Select(s => s.Shape?.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .Distinct()
+                    .ToList() ?? new List<string>(),
 
                 StoneColors = characteristic?.Stones?
-                        .Select(s => s.Color?.Name)
-                        .Where(name => !string.IsNullOrEmpty(name))
-                        .Distinct()
-                        .ToList(),
+                    .Select(s => s.Color?.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .Distinct()
+                    .ToList() ?? new List<string>(),
 
                 StoneSizes = characteristic?.Stones?
-                        .Select(s => s.Size?.Name)
-                        .Where(name => !string.IsNullOrEmpty(name))
-                        .Distinct()
-                        .ToList(),
+                    .Select(s => s.Size?.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .Distinct()
+                    .ToList() ?? new List<string>(),
 
                 StoneTypes = characteristic?.Stones?
-                        .Select(s => s.Type?.Name)
-                        .Where(name => !string.IsNullOrEmpty(name))
-                        .Distinct()
-                        .ToList(),
+                    .Select(s => s.Type?.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .Distinct()
+                    .ToList() ?? new List<string>(),
 
-                CountMin = characteristic?.Stones?.Min(s => s.Count),
-                CountMax = characteristic?.Stones?.Max(s => s.Count)
+                CountMin = characteristic?.Stones?.Min(s => s.Count) ?? 0,
+                CountMax = characteristic?.Stones?.Max(s => s.Count) ?? 0
             };
 
             return productFilter;
         }
+
 
 
     }

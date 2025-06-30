@@ -7,6 +7,9 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using Telegram.Bot.Extensions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +20,7 @@ using JFjewelery.Services;
 using JFjewelery.Services.Interfaces;
 using JFjewelery.Scenarios.Interfaces;
 using JFjewelery.Scenarios;
+
 
 
 namespace JFjelelery;
@@ -44,8 +48,12 @@ class Program
                 var connectionString = configuration.GetConnectionString("DefaultConnection");
                 services.AddDbContext<AppDbContext>(options =>
                     options.UseNpgsql(connectionString, npgsqlOptions =>
-                        npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
-                    ));
+                    {
+                        npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+
+                    })
+                    .EnableSensitiveDataLogging()
+                    );
 
                 //Old config
                 //services.AddDbContext<AppDbContext>(options =>
@@ -63,6 +71,22 @@ class Program
 
                 //Add bot to host
                 services.AddHostedService<BotService>();
+            })
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.Configure(app =>
+                {
+                    // Static files from Media
+                    app.UseStaticFiles(new StaticFileOptions
+                    {
+                        FileProvider = new PhysicalFileProvider(
+                            Path.Combine(Directory.GetCurrentDirectory(), "Media")),
+                        RequestPath = "/Media"
+                    });
+                });
+
+                // Servder accessed by url
+                webBuilder.UseUrls("http://localhost:5000");
             })
             .Build();
 

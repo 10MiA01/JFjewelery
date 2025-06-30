@@ -78,7 +78,7 @@ namespace JFjewelery.Utility
                 if (telegramAcc != null)
                 {
                     var customer = await _customerService.GetOrCreateCustomerAsync(chatId, telegramAcc);
-                    _chatSessionService.ResetSessionAsync(customer.Id);
+                    await _chatSessionService.ResetSessionAsync(chatId);
 
                 }
 
@@ -103,7 +103,7 @@ namespace JFjewelery.Utility
                 if (telegramAcc != null)
                 {
                     var customer = await _customerService.GetOrCreateCustomerAsync( chatId,telegramAcc);
-                    _chatSessionService.ResetSessionAsync(customer.Id);
+                    await _chatSessionService.ResetSessionAsync(chatId);
 
                 }
 

@@ -4,6 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
+using Telegram.Bot;
+using Telegram.Bot.Polling;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using Microsoft.EntityFrameworkCore;
 
 using JFjewelery.Data;
@@ -11,6 +16,9 @@ using JFjewelery.Models;
 using JFjewelery.Models.DTO;
 using JFjewelery.Models.Enums;
 using JFjewelery.Services.Interfaces;
+using JFjewelery.Extensions;
+using System.Diagnostics.Eventing.Reader;
+
 
 
 namespace JFjewelery.Services
@@ -18,31 +26,57 @@ namespace JFjewelery.Services
     public class ChatSessionService : IChatSessionService
     {
         private readonly AppDbContext _dbContext;
+        private readonly ICustomerService _customerService;
 
-        public ChatSessionService(AppDbContext dbContext)
+        public ChatSessionService(AppDbContext dbContext, ICustomerService customerService)
         {
             _dbContext = dbContext;
+            _customerService = customerService;
         }
 
 
         // Customer is guaranteed to exist here due to prior GetOrCreateCustomerAsync
-        public async Task<ChatSession> GetOrCteateSessionAsync(long chatId)
+        public async Task<ChatSession> GetOrCteateSessionAsync(Update update)
         {
+            var telegramAcc = update.Message?.From?.Username
+               ?? update.CallbackQuery?.From?.Username
+               ?? update.Message?.From?.Id.ToString()
+               ?? update.CallbackQuery?.From?.Id.ToString();
+
+            var chatId = update.GetChatId();
             var customer = await _dbContext.Customers
                 .FirstOrDefaultAsync(c => c.ChatId == chatId);
 
+            if (customer == null && telegramAcc != null)
+            {
+                
+                customer = await _customerService.GetOrCreateCustomerAsync(chatId, telegramAcc);
+            }
+
+            //Null check
+            if (customer == null)
+                throw new Exception("Customer could not be resolved. ChatSessionService_1");
+
             var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id);
-            if (session == null)
+            if (customer != null && session == null)
             {
                 session = new ChatSession
                 {
                     CustomerId = customer.Id,
-                    CurrentScenario = "Idle",
+                    CurrentScenario = null,
+                    ScenarioStep = null,
+                    FilterJson = null,
+                    TempData = null,
                     LastUpdated = DateTime.UtcNow
                 };
                 _dbContext.ChatSessions.Add(session);
                 await _dbContext.SaveChangesAsync();
             }
+
+            //Null check
+            if (session == null)
+                throw new Exception("Session could not be resolved.");
+
             return session;
         }
 
@@ -58,9 +92,13 @@ namespace JFjewelery.Services
             var customer = await _dbContext.Customers
                 .FirstOrDefaultAsync(c => c.ChatId == chatId);
 
+            //Null check
+            if (customer == null)
+                throw new Exception("Customer could not be resolved.ChatSessionService_2");
+
 
             var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id);
-            if(session != null)
+            if(customer != null &&  session != null)
             {
                 session.CustomerId = customer.Id;
                 session.CurrentScenario = null;
@@ -69,12 +107,15 @@ namespace JFjewelery.Services
                 session.TempData = null;
                 session.LastUpdated = DateTime.UtcNow;
             }
-            else
+            else if (customer != null)
             {
                 session = new ChatSession
                 {
                     CustomerId = customer.Id,
-                    CurrentScenario = "Idle",
+                    CurrentScenario = null,
+                    ScenarioStep = null,
+                    FilterJson = null,
+                    TempData = null,
                     LastUpdated = DateTime.UtcNow
                 };
                 _dbContext.ChatSessions.Add(session);
@@ -88,13 +129,23 @@ namespace JFjewelery.Services
             var customer = await _dbContext.Customers
                 .FirstOrDefaultAsync(c => c.ChatId == chatId);
 
+            //Null check
             if (customer == null)
-                throw new Exception("Customer not found");
+                throw new Exception("Customer could not be resolved.ChatSessionService_3");
 
             var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id)
                   ?? throw new Exception("Chat session not found");
 
-            ProductFilterCriteria filterFromSession = JsonSerializer.Deserialize<ProductFilterCriteria>(session.FilterJson) ?? new ProductFilterCriteria();
+            ProductFilterCriteria filterFromSession;
+
+            if (session == null || string.IsNullOrEmpty(session.FilterJson))
+            {
+                filterFromSession = new ProductFilterCriteria();
+            }
+            else
+            {
+                filterFromSession = JsonSerializer.Deserialize<ProductFilterCriteria>(session.FilterJson) ?? new ProductFilterCriteria();
+            }
 
             return filterFromSession;
         }
@@ -104,8 +155,9 @@ namespace JFjewelery.Services
             var customer = await _dbContext.Customers
                 .FirstOrDefaultAsync(c => c.ChatId == chatId);
 
+            //Null check
             if (customer == null)
-                throw new Exception("Customer not found");
+                throw new Exception("Customer could not be resolved.ChatSessionService_4");
 
             var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id)
                   ?? throw new Exception("Chat session not found");
@@ -120,11 +172,15 @@ namespace JFjewelery.Services
             var customer = await _dbContext.Customers
                 .FirstOrDefaultAsync(c => c.ChatId == chatId);
 
+            //Null check
+            if (customer == null)
+                throw new Exception("Customer could not be resolved.ChatSessionService_5");
+
 
             var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id)
                   ?? throw new Exception("Chat session not found");
 
-            var existingCriteria = await GetOrCreateExistingCriteriaAsync(customer.Id);
+            var existingCriteria = await GetOrCreateExistingCriteriaAsync(chatId);
 
             UpdateGeneral(existingCriteria, newCriteria, operation);
             UpdateMetals(existingCriteria, newCriteria, operation);
@@ -172,14 +228,25 @@ namespace JFjewelery.Services
             }
 
             target.Purity = source.Purity;
-            if (source.WeightMax > source.WeightMin)
+            if (source.WeightMin != null && source.WeightMax != null)
             {
-                target.WeightMin = source.WeightMin;
-                target.WeightMax = source.WeightMax;
+                if (source.WeightMax >= source.WeightMin)
+                {
+                    target.WeightMin = source.WeightMin;
+                    target.WeightMax = source.WeightMax;
+                }
+                else
+                {
+                    throw new ArgumentException("The minimum weight cannot be greater than the maximum.");
+                }  
             }
             else
             {
-                throw new ArgumentException("The minimum weight cannot be greater than the maximum.");
+                if (source.WeightMin != null)
+                    target.WeightMin = source.WeightMin;
+
+                if (source.WeightMax != null)
+                    target.WeightMax = source.WeightMax;
             }
         }
 
@@ -202,17 +269,28 @@ namespace JFjewelery.Services
                 target.StoneTypes = RemoveLists(target.StoneTypes, source.StoneTypes);
             }
 
-            if (source.CountMax > source.CountMin)
+            if (source.CountMin != null && source.CountMax != null)
             {
-                target.CountMin = source.CountMin;
-                target.CountMax = source.CountMax;
+                if (source.CountMax >= source.CountMin)
+                {
+                    target.CountMin = source.CountMin;
+                    target.CountMax = source.CountMax;
+                }
+                else
+                {
+                    throw new ArgumentException("The minimum number of stones cannot be greater than the maximum.");
+                }
             }
             else
             {
-                throw new ArgumentException("The minimum number of stones cannot be greater than the maximum.");
+                if (source.CountMin != null)
+                    target.CountMin = source.CountMin;
+
+                if (source.CountMax != null)
+                    target.CountMax = source.CountMax;
             }
 
-            
+
         }
 
 
@@ -221,7 +299,14 @@ namespace JFjewelery.Services
             var customer = await _dbContext.Customers
                 .FirstOrDefaultAsync(c => c.ChatId == chatId);
 
+            //Null check
+            if (customer == null)
+                throw new Exception("Customer could not be resolved.ChatSessionService_6");
+
             var session = await _dbContext.ChatSessions.FirstOrDefaultAsync(s => s.CustomerId == customer.Id);
+
+            if (session == null)
+                throw new Exception("Session could not be resolved.");
 
             //Create new criteria if doesn't exists
             ProductFilterCriteria existingCriteria = new ProductFilterCriteria();

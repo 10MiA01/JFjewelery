@@ -61,15 +61,18 @@ namespace JFjewelery.Scenarios
         public async Task ExecuteAsync(Telegram.Bot.Types.Update update, CancellationToken cancellationToken)
         {
             var chatId = update.GetChatId();
-            var session = await _sessionService.GetOrCteateSessionAsync(chatId)
+            var session = await _sessionService.GetOrCteateSessionAsync(update)
                 ?? throw new Exception("Chat session not found");
             var scenario = session.CurrentScenario;
-            _scenario = _dbContext.Scenarios
+            _scenario = await _dbContext.Scenarios
             .Include(s => s.Steps)
                 .ThenInclude(step => step.Options)
             .Include(s => s.Steps)
                 .ThenInclude(step => step.NextStep)
-            .FirstOrDefault(s => s.Name == scenario);
+            .FirstOrDefaultAsync(s => s.Name == scenario);
+
+            if (_scenario == null)
+                throw new Exception("Scenario could not be resolved.ScenarioPersonalForm_3");
 
 
             _steps = _scenario.Steps.OrderBy(s => s.Id).ToList();
@@ -103,12 +106,42 @@ namespace JFjewelery.Scenarios
             { 
                 //Get a step
                 var currentStep = _steps.Where(s => s.Name == session.ScenarioStep).FirstOrDefault();
-                var optionSelected = update.CallbackQuery.Data;
-                var currentOption = currentStep.Options.Where(o => o.Name == optionSelected).FirstOrDefault();
 
+                //Loging for debug
+                Console.WriteLine($"Step: {currentStep.Name}, Options: {string.Join(", ", currentStep.Options.Select(o => o.Name))}");
+
+                //Null check
+                if (currentStep == null)
+                    throw new Exception("currentStep could not be resolved.ScenarioPersonalForm_1");
+                if(update.CallbackQuery.Data == null)
+                    throw new Exception("Responce could not be resolved.ScenarioPersonalForm_2");
+
+                var optionSelected = update.CallbackQuery.Data;
+
+                //Loging for debug
+                Console.WriteLine($"User selected option: {optionSelected}");
+                var currentOption = currentStep.Options.Where(o => o.Name == optionSelected).FirstOrDefault();
+                
+                //Null check
+                if (currentOption == null)
+                {
+                    await _botClient.SendTextMessageAsync(
+                    chatId: chatId,
+                    text: $"An Error occured. Send /start to start chat",
+                    cancellationToken: cancellationToken);
+                    //return;
+                }
 
                 //get and apply filters
-                ProductFilterCriteria filterFromClient = JsonSerializer.Deserialize<ProductFilterCriteria>(currentOption.FilterJson) ?? new ProductFilterCriteria();
+                ProductFilterCriteria filterFromClient;
+                if (currentOption.FilterJson == null || string.IsNullOrEmpty(session.FilterJson))
+                {
+                    filterFromClient = new ProductFilterCriteria();
+                }
+                else
+                {
+                    filterFromClient = JsonSerializer.Deserialize<ProductFilterCriteria>(currentOption.FilterJson) ?? new ProductFilterCriteria();
+                }
 
                 await _sessionService.UpdateFilterCriteriaAsync(chatId, filterFromClient, FilterOperation.Add);
 
@@ -121,6 +154,8 @@ namespace JFjewelery.Scenarios
                 else
                 {
                     currentStep = currentStep.NextStep;
+                    session.ScenarioStep = currentStep.Name;
+                    await _sessionService.UpdateSessionAsync(session);
                 }
 
                 //Compose buttons 
