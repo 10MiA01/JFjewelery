@@ -103,7 +103,19 @@ namespace JFjewelery.Scenarios
 
             //If next step
             else if (session.ScenarioStep != null)
-            { 
+            {
+
+                if (update.CallbackQuery.Data == "Finish")
+                {
+                    await _sessionService.ResetSessionAsync(chatId);
+
+                    await _botClient.SendTextMessageAsync(
+                    chatId: chatId,
+                    text: $"Soryy, if you didn.t like the quiz, but you can choose another one! Just send /start",
+                    cancellationToken: cancellationToken);
+                    return;
+                }
+
                 //Get a step
                 var currentStep = _steps.Where(s => s.Name == session.ScenarioStep).FirstOrDefault();
 
@@ -144,6 +156,7 @@ namespace JFjewelery.Scenarios
                 }
 
                 await _sessionService.UpdateFilterCriteriaAsync(chatId, filterFromClient, FilterOperation.Add);
+
 
                 //Move to next step
                 if (currentStep.NextStep == null)

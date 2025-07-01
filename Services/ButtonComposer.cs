@@ -17,8 +17,17 @@ namespace JFjewelery.Services
             var options = step.Options.ToList();
             var buttons = options
                     .Select(o => InlineKeyboardButton.WithCallbackData(o.Name, o.Name))
-                    .ToArray();
-            var keyboard = new InlineKeyboardMarkup(buttons.Chunk(2));
+                    .Chunk(2)
+                    .ToList();
+
+            var finishButton = new[]
+            {
+                InlineKeyboardButton.WithCallbackData("Finish", "Finish")
+            };
+
+            buttons.Add(finishButton);
+
+            var keyboard = new InlineKeyboardMarkup(buttons);
 
             return keyboard;
         }
