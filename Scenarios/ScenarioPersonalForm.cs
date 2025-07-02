@@ -90,7 +90,7 @@ namespace JFjewelery.Scenarios
                 "they will help you find the jewelry that suits you!");
 
                 //Compose buttons 
-                var keyboard =_buttonComposer.CreateKeyboard(firstStep);
+                var keyboard =_buttonComposer.CreateKeyboard(firstStep, ExtraButtonType.Cancel);
 
                 //Send the message to the client
                 await _botClient.SendTextMessageAsync(
@@ -104,14 +104,14 @@ namespace JFjewelery.Scenarios
             //If next step
             else if (session.ScenarioStep != null)
             {
-
-                if (update.CallbackQuery.Data == "Finish")
+                //Quiz is cancelled
+                if (update.CallbackQuery.Data == "Cancel")
                 {
                     await _sessionService.ResetSessionAsync(chatId);
 
                     await _botClient.SendTextMessageAsync(
                     chatId: chatId,
-                    text: $"Soryy, if you didn.t like the quiz, but you can choose another one! Just send /start",
+                    text: $"Soryy, if you didn't like the quiz, but you can choose another one! Just send /start",
                     cancellationToken: cancellationToken);
                     return;
                 }
@@ -157,6 +157,20 @@ namespace JFjewelery.Scenarios
 
                 await _sessionService.UpdateFilterCriteriaAsync(chatId, filterFromClient, FilterOperation.Add);
 
+                //Quiz is finished before the last question
+                if (update.CallbackQuery.Data == "Finish")
+                {
+                    await _botClient.SendTextMessageAsync(
+                    chatId: chatId,
+                    text: $"Here is the result based on your replies! Hope you'll like :)",
+                    cancellationToken: cancellationToken);
+
+                    await FinishForm(update, cancellationToken);
+
+                    await _sessionService.ResetSessionAsync(chatId);
+                    return;
+                }
+
 
                 //Move to next step
                 if (currentStep.NextStep == null)
@@ -172,7 +186,7 @@ namespace JFjewelery.Scenarios
                 }
 
                 //Compose buttons 
-                var keyboard = _buttonComposer.CreateKeyboard(currentStep);
+                var keyboard = _buttonComposer.CreateKeyboard(currentStep, ExtraButtonType.FinishAndCancel);
 
                 //Send the message to the client
                 await _botClient.SendTextMessageAsync(
