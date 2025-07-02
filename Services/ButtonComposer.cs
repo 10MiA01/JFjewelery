@@ -49,7 +49,7 @@ namespace JFjewelery.Services
                 var cancelButton = new[] { InlineKeyboardButton.WithCallbackData("Cancel", "Cancel") };
                 return cancelButton;
             }
-            else if (extraButtons == ExtraButtonType.Cancel)
+            else if (extraButtons == ExtraButtonType.FinishAndCancel)
             {
                 var finishCancelButton = new[] 
                 {

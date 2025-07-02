@@ -41,7 +41,7 @@ namespace JFjewelery.Scenarios
         public List<Step> _steps;
         public List<Option> _options;
 
-        public List<string> Names => new() { "Personal form", "Custom characteristics", "Custom for an event " };
+        public List<string> Names => new() { "Personal form", "Custom characteristics", "Custom for an event" };
 
         public ScenarioPersonalForm(ITelegramBotClient botClient, IChatSessionService sessionService,IButtonComposer buttonComposer, ICharacteristicsFilter characteristicsFilter, AppDbContext dbContext)
         {
@@ -134,6 +134,20 @@ namespace JFjewelery.Scenarios
                 Console.WriteLine($"User selected option: {optionSelected}");
                 var currentOption = currentStep.Options.Where(o => o.Name == optionSelected).FirstOrDefault();
                 
+                //Quiz is finished before the last question
+                if (update.CallbackQuery.Data == "Finish")
+                {
+                    await _botClient.SendTextMessageAsync(
+                    chatId: chatId,
+                    text: $"Here is the result based on your replies! Hope you'll like :)",
+                    cancellationToken: cancellationToken);
+
+                    await FinishForm(update, cancellationToken);
+
+                    await _sessionService.ResetSessionAsync(chatId);
+                    return;
+                }
+
                 //Null check
                 if (currentOption == null)
                 {
@@ -157,19 +171,7 @@ namespace JFjewelery.Scenarios
 
                 await _sessionService.UpdateFilterCriteriaAsync(chatId, filterFromClient, FilterOperation.Add);
 
-                //Quiz is finished before the last question
-                if (update.CallbackQuery.Data == "Finish")
-                {
-                    await _botClient.SendTextMessageAsync(
-                    chatId: chatId,
-                    text: $"Here is the result based on your replies! Hope you'll like :)",
-                    cancellationToken: cancellationToken);
-
-                    await FinishForm(update, cancellationToken);
-
-                    await _sessionService.ResetSessionAsync(chatId);
-                    return;
-                }
+                
 
 
                 //Move to next step
