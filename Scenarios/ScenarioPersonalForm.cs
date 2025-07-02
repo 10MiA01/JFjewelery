@@ -30,6 +30,7 @@ namespace JFjewelery.Scenarios
 {
     public class ScenarioPersonalForm : IBotScenario
     {
+        private readonly Uri _baseUri;
         private readonly ITelegramBotClient _botClient;
         private readonly IChatSessionService _sessionService;
         private readonly IButtonComposer _buttonComposer;
@@ -43,8 +44,9 @@ namespace JFjewelery.Scenarios
 
         public List<string> Names => new() { "Personal form", "Custom characteristics", "Custom for an event" };
 
-        public ScenarioPersonalForm(ITelegramBotClient botClient, IChatSessionService sessionService,IButtonComposer buttonComposer, ICharacteristicsFilter characteristicsFilter, AppDbContext dbContext)
+        public ScenarioPersonalForm(Uri baseUri, ITelegramBotClient botClient, IChatSessionService sessionService,IButtonComposer buttonComposer, ICharacteristicsFilter characteristicsFilter, AppDbContext dbContext)
         {
+            _baseUri = baseUri; //reference, not an instance
             _botClient = botClient;
             _sessionService = sessionService;
             _buttonComposer = buttonComposer;
@@ -216,10 +218,15 @@ namespace JFjewelery.Scenarios
 
             foreach (var product in top3Products)
             {
-                var imageUrl = product.Images.FirstOrDefault()?.FilePath;
+                var relativePath = product.Images.FirstOrDefault()?.FilePath;
 
-                if (!string.IsNullOrEmpty(imageUrl))
+                Console.WriteLine($"image url: {relativePath}");
+
+                if (!string.IsNullOrEmpty(relativePath))
                 {
+                    var imageUrl = new Uri(_baseUri, relativePath.Replace("\\", "/")).ToString();
+                    Console.WriteLine($"Full image URL: {imageUrl}");
+
                     await _botClient.SendPhotoAsync(
                         chatId: chatId,
                         photo: InputFile.FromUri(imageUrl), 

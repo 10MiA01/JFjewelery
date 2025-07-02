@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -28,6 +29,16 @@ class Program
 
         var configuration = builder.Configuration;
 
+        //Base url
+        var baseUrl = builder.Configuration["BaseUrl"];
+        builder.Services.AddSingleton(new Uri(baseUrl));
+
+        builder.WebHost.ConfigureKestrel(options =>
+        {
+            options.ListenAnyIP(50413); // чтобы слушать не только localhost
+        });
+
+
         // Telegram bot
         var botToken = configuration["TelegramBot:Token"];
         builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botToken));
@@ -54,12 +65,25 @@ class Program
 
         var app = builder.Build();
 
-        // 👉 Подключаем статические файлы из папки Media
+        // Connect static files from the folder Media
+        var provider = new FileExtensionContentTypeProvider();
+        provider.Mappings[".jpg"] = "image/jpeg";
+        provider.Mappings[".jpeg"] = "image/jpeg";
+        provider.Mappings[".png"] = "image/png";
+
+
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(
                 Path.Combine(Directory.GetCurrentDirectory(), "Media")),
-            RequestPath = "/Media"
+            RequestPath = "/Media",
+            ContentTypeProvider = provider,
+            OnPrepareResponse = ctx =>
+            {
+                ctx.Context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+                ctx.Context.Response.Headers["Pragma"] = "no-cache";
+                ctx.Context.Response.Headers["Expires"] = "0";
+            }
         });
 
         await app.RunAsync();
