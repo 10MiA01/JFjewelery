@@ -3,10 +3,11 @@
     "JFjewelery": {
       "commandName": "Project",
       "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "https://localhost:50413;http://localhost:50415"
+      "launchUrl": "http://192.168.0.115:50413",
+        "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Production"
+        },
+      "applicationUrl": "http://192.168.0.115:50413"
     }
   }
 }
