@@ -8,6 +8,8 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
+using MihaZupan;
+using System.Net.Http;
 
 
 using JFjewelery.Utility;
@@ -16,6 +18,7 @@ using JFjewelery.Services;
 using JFjewelery.Services.Interfaces;
 using JFjewelery.Scenarios.Interfaces;
 using JFjewelery.Scenarios;
+
 
 
 
@@ -31,17 +34,41 @@ class Program
 
         //Base url
         var baseUrl = builder.Configuration["BaseUrl"];
-        builder.Services.AddSingleton(new Uri(baseUrl));
+        var baseUri = new Uri(baseUrl!);
+        var host = baseUri.Host;         // "192.168.0.115"
+        var port = baseUri.Port;         // 50413
 
+        builder.Services.AddSingleton(baseUri);
+
+        //Clean URL's
+        builder.WebHost.UseUrls();
+        // allow to listen not only the localhost, but also external IP-connections
         builder.WebHost.ConfigureKestrel(options =>
         {
-            options.ListenAnyIP(50413); // чтобы слушать не только localhost
+            options.Listen(System.Net.IPAddress.Any, port);
         });
 
 
         // Telegram bot
         var botToken = configuration["TelegramBot:Token"];
         builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botToken));
+
+        ////Proxy
+        //builder.Services.AddSingleton<ITelegramBotClient>(sp =>
+        //{
+        //    var proxy = new HttpToSocks5Proxy(host, port);
+        //    var handler = new HttpClientHandler
+        //    {
+        //        Proxy = proxy,
+        //        UseProxy = true
+        //    };
+
+        //    var httpClient = new HttpClient(handler);
+
+        //    return new TelegramBotClient(botToken, httpClient);
+        //});
+
+
 
         // DB context
         var connectionString = configuration.GetConnectionString("DefaultConnection");
