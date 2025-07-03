@@ -106,6 +106,7 @@ namespace JFjewelery.Services
                 session.FilterJson = null;
                 session.TempData = null;
                 session.LastUpdated = DateTime.UtcNow;
+                await _dbContext.SaveChangesAsync();
             }
             else if (customer != null)
             {

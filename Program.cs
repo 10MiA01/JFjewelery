@@ -1,12 +1,15 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
+using MihaZupan;
+using System.Net.Http;
 
 
 using JFjewelery.Utility;
@@ -15,6 +18,7 @@ using JFjewelery.Services;
 using JFjewelery.Services.Interfaces;
 using JFjewelery.Scenarios.Interfaces;
 using JFjewelery.Scenarios;
+
 
 
 
@@ -28,9 +32,53 @@ class Program
 
         var configuration = builder.Configuration;
 
+        // Determine the current environment
+        var isProd = builder.Environment.IsProduction();
+
+        // Get baseUrl depending on the environment
+        var baseUrl = isProd
+            ? "https://raw.githubusercontent.com/10MiA01/JFjewelery/master/"
+            : configuration["BaseUrl"];
+
+        var baseUri = new Uri(baseUrl!);
+        builder.Services.AddSingleton(baseUri);
+
+        // If not in production, extract host and port and configure Kestrel manually
+        if (!isProd)
+        {
+            var host = baseUri.Host; // e.g., "192.168.0.115"
+            var port = baseUri.Port; // e.g., 50413
+
+            // Clear default URLs and configure Kestrel to listen on the specified port
+            builder.WebHost.UseUrls();
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.Listen(System.Net.IPAddress.Any, port);
+            });
+        }
+
+
+
         // Telegram bot
         var botToken = configuration["TelegramBot:Token"];
         builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botToken));
+
+        ////Proxy
+        //builder.Services.AddSingleton<ITelegramBotClient>(sp =>
+        //{
+        //    var proxy = new HttpToSocks5Proxy(host, port);
+        //    var handler = new HttpClientHandler
+        //    {
+        //        Proxy = proxy,
+        //        UseProxy = true
+        //    };
+
+        //    var httpClient = new HttpClient(handler);
+
+        //    return new TelegramBotClient(botToken, httpClient);
+        //});
+
+
 
         // DB context
         var connectionString = configuration.GetConnectionString("DefaultConnection");
@@ -54,12 +102,25 @@ class Program
 
         var app = builder.Build();
 
-        // 👉 Подключаем статические файлы из папки Media
+        // Connect static files from the folder Media
+        var provider = new FileExtensionContentTypeProvider();
+        provider.Mappings[".jpg"] = "image/jpeg";
+        provider.Mappings[".jpeg"] = "image/jpeg";
+        provider.Mappings[".png"] = "image/png";
+
+
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(
                 Path.Combine(Directory.GetCurrentDirectory(), "Media")),
-            RequestPath = "/Media"
+            RequestPath = "/Media",
+            ContentTypeProvider = provider,
+            OnPrepareResponse = ctx =>
+            {
+                ctx.Context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+                ctx.Context.Response.Headers["Pragma"] = "no-cache";
+                ctx.Context.Response.Headers["Expires"] = "0";
+            }
         });
 
         await app.RunAsync();

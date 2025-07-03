@@ -30,6 +30,7 @@ namespace JFjewelery.Scenarios
 {
     public class ScenarioPersonalForm : IBotScenario
     {
+        private readonly Uri _baseUri;
         private readonly ITelegramBotClient _botClient;
         private readonly IChatSessionService _sessionService;
         private readonly IButtonComposer _buttonComposer;
@@ -41,10 +42,11 @@ namespace JFjewelery.Scenarios
         public List<Step> _steps;
         public List<Option> _options;
 
-        public List<string> Names => new() { "Personal form", "Custom characteristics", "Custom for an event " };
+        public List<string> Names => new() { "Personal form", "Custom characteristics", "Custom for an event" };
 
-        public ScenarioPersonalForm(ITelegramBotClient botClient, IChatSessionService sessionService,IButtonComposer buttonComposer, ICharacteristicsFilter characteristicsFilter, AppDbContext dbContext)
+        public ScenarioPersonalForm(Uri baseUri, ITelegramBotClient botClient, IChatSessionService sessionService,IButtonComposer buttonComposer, ICharacteristicsFilter characteristicsFilter, AppDbContext dbContext)
         {
+            _baseUri = baseUri; //reference, not an instance
             _botClient = botClient;
             _sessionService = sessionService;
             _buttonComposer = buttonComposer;
@@ -90,7 +92,7 @@ namespace JFjewelery.Scenarios
                 "they will help you find the jewelry that suits you!");
 
                 //Compose buttons 
-                var keyboard =_buttonComposer.CreateKeyboard(firstStep);
+                var keyboard =_buttonComposer.CreateKeyboard(firstStep, ExtraButtonType.Cancel);
 
                 //Send the message to the client
                 await _botClient.SendTextMessageAsync(
@@ -103,7 +105,19 @@ namespace JFjewelery.Scenarios
 
             //If next step
             else if (session.ScenarioStep != null)
-            { 
+            {
+                //Quiz is cancelled
+                if (update.CallbackQuery.Data == "Cancel")
+                {
+                    await _sessionService.ResetSessionAsync(chatId);
+
+                    await _botClient.SendTextMessageAsync(
+                    chatId: chatId,
+                    text: $"Soryy, if you didn't like the quiz, but you can choose another one! Just send /start",
+                    cancellationToken: cancellationToken);
+                    return;
+                }
+
                 //Get a step
                 var currentStep = _steps.Where(s => s.Name == session.ScenarioStep).FirstOrDefault();
 
@@ -122,6 +136,20 @@ namespace JFjewelery.Scenarios
                 Console.WriteLine($"User selected option: {optionSelected}");
                 var currentOption = currentStep.Options.Where(o => o.Name == optionSelected).FirstOrDefault();
                 
+                //Quiz is finished before the last question
+                if (update.CallbackQuery.Data == "Finish")
+                {
+                    await _botClient.SendTextMessageAsync(
+                    chatId: chatId,
+                    text: $"Here is the result based on your replies! Hope you'll like :)",
+                    cancellationToken: cancellationToken);
+
+                    await FinishForm(update, cancellationToken);
+
+                    await _sessionService.ResetSessionAsync(chatId);
+                    return;
+                }
+
                 //Null check
                 if (currentOption == null)
                 {
@@ -145,6 +173,9 @@ namespace JFjewelery.Scenarios
 
                 await _sessionService.UpdateFilterCriteriaAsync(chatId, filterFromClient, FilterOperation.Add);
 
+                
+
+
                 //Move to next step
                 if (currentStep.NextStep == null)
                 {
@@ -159,7 +190,7 @@ namespace JFjewelery.Scenarios
                 }
 
                 //Compose buttons 
-                var keyboard = _buttonComposer.CreateKeyboard(currentStep);
+                var keyboard = _buttonComposer.CreateKeyboard(currentStep, ExtraButtonType.FinishAndCancel);
 
                 //Send the message to the client
                 await _botClient.SendTextMessageAsync(
@@ -187,10 +218,15 @@ namespace JFjewelery.Scenarios
 
             foreach (var product in top3Products)
             {
-                var imageUrl = product.Images.FirstOrDefault()?.FilePath;
+                var relativePath = product.Images.FirstOrDefault()?.FilePath;
 
-                if (!string.IsNullOrEmpty(imageUrl))
+                Console.WriteLine($"image url: {relativePath}");
+
+                if (!string.IsNullOrEmpty(relativePath))
                 {
+                    var imageUrl = new Uri(_baseUri, relativePath.Replace("\\", "/")).ToString();
+                    Console.WriteLine($"Full image URL: {imageUrl}");
+
                     await _botClient.SendPhotoAsync(
                         chatId: chatId,
                         photo: InputFile.FromUri(imageUrl), 

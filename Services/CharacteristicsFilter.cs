@@ -33,6 +33,7 @@ namespace JFjewelery.Services
 
             var products = await _dbContext.Products
                 .Include(p => p.Characteristic)
+                .Include(p => p.Images)
                 .ToListAsync();
 
             foreach (var product in products)
