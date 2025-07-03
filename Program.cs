@@ -32,21 +32,31 @@ class Program
 
         var configuration = builder.Configuration;
 
-        //Base url
-        var baseUrl = builder.Configuration["BaseUrl"];
-        var baseUri = new Uri(baseUrl!);
-        var host = baseUri.Host;         // "192.168.0.115"
-        var port = baseUri.Port;         // 50413
+        // Determine the current environment
+        var isProd = builder.Environment.IsProduction();
 
+        // Get baseUrl depending on the environment
+        var baseUrl = isProd
+            ? "https://raw.githubusercontent.com/10MiA01/JFjewelery/master/"
+            : configuration["BaseUrl"];
+
+        var baseUri = new Uri(baseUrl!);
         builder.Services.AddSingleton(baseUri);
 
-        //Clean URL's
-        builder.WebHost.UseUrls();
-        // allow to listen not only the localhost, but also external IP-connections
-        builder.WebHost.ConfigureKestrel(options =>
+        // If not in production, extract host and port and configure Kestrel manually
+        if (!isProd)
         {
-            options.Listen(System.Net.IPAddress.Any, port);
-        });
+            var host = baseUri.Host; // e.g., "192.168.0.115"
+            var port = baseUri.Port; // e.g., 50413
+
+            // Clear default URLs and configure Kestrel to listen on the specified port
+            builder.WebHost.UseUrls();
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.Listen(System.Net.IPAddress.Any, port);
+            });
+        }
+
 
 
         // Telegram bot
