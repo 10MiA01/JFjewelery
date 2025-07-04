@@ -1,51 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Telegram.Bot;
-using Telegram.Bot.Polling;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
-using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
-using System.Xml.Linq;
-
-using JFjewelery.Utility;
-using JFjewelery.Scenarios.Interfaces;
-using JFjewelery.Models;
-using JFjewelery.Services.Interfaces;
+﻿using JFjewelery.Data;
 using JFjewelery.Extensions;
-using JFjewelery.Data;
-using JFjewelery.Models.Scenario;
 using JFjewelery.Models.DTO;
 using JFjewelery.Models.Enums;
-
-using static JFjewelery.Services.ChatSessionService;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using System.Threading;
+using JFjewelery.Models.Scenario;
+using JFjewelery.Scenarios.Interfaces;
+using JFjewelery.Services.Interfaces;
+using Telegram.Bot;
 
 namespace JFjewelery.Scenarios
 {
-    public class ScenarioPersonalForm : IBotScenario
+    public class ScenarioImageCustom : IBotScenario
     {
+        
+
         private readonly Uri _baseUri;
         private readonly ITelegramBotClient _botClient;
         private readonly IChatSessionService _sessionService;
         private readonly IButtonComposer _buttonComposer;
         private readonly ICharacteristicsFilter _characteristicsFilter;
         private readonly AppDbContext _dbContext;
+        private readonly IFileManager _fileManager;
 
-
+        public List<string> Names => new() { "Custom by picture" };
 
         public Scenario _scenario;
         public List<Step> _steps;
         public List<Option> _options;
 
-        public List<string> Names => new() { "Personal form", "Custom characteristics", "Custom for an event" };
-
-        public ScenarioPersonalForm(Uri baseUri, ITelegramBotClient botClient, IChatSessionService sessionService,IButtonComposer buttonComposer, ICharacteristicsFilter characteristicsFilter, AppDbContext dbContext)
+        public ScenarioImageCustom(Uri baseUri, ITelegramBotClient botClient, IChatSessionService sessionService, IButtonComposer buttonComposer, 
+            ICharacteristicsFilter characteristicsFilter, AppDbContext dbContext, IFileManager fileManager)
         {
             _baseUri = baseUri; //reference, not an instance
             _botClient = botClient;
@@ -53,28 +36,41 @@ namespace JFjewelery.Scenarios
             _buttonComposer = buttonComposer;
             _characteristicsFilter = characteristicsFilter;
             _dbContext = dbContext;
-   
+            _fileManager = fileManager;
+
         }
 
 
+        //To REDO
         public async Task ExecuteAsync(Telegram.Bot.Types.Update update, CancellationToken cancellationToken)
         {
+            //Get chat info
             var chatId = update.GetChatId();
             var session = await _sessionService.GetOrCteateSessionAsync(update)
                 ?? throw new Exception("Chat session not found");
-            var scenario = session.CurrentScenario;
-            _scenario = await _dbContext.Scenarios
-            .Include(s => s.Steps)
-                .ThenInclude(step => step.Options)
-            .Include(s => s.Steps)
-                .ThenInclude(step => step.NextStep)
-            .FirstOrDefaultAsync(s => s.Name == scenario);
 
-            if (_scenario == null)
-                throw new Exception("Scenario could not be resolved.ScenarioPersonalForm_3");
+            //Send a message to get a picture
+            await _botClient.SendTextMessageAsync(
+                chatId: chatId,
+                text: $"Please send a picture as a reference for your jewels!",
+                cancellationToken: cancellationToken);
 
 
-            _steps = _scenario.Steps.OrderBy(s => s.Id).ToList();
+            //Get the picture
+            var picture = await _fileManager.DownloadPhotoAsync(update, cancellationToken)
+
+
+            //Give it to Api
+
+
+            //Have product filter back
+
+
+            //Implement filter and return result
+            //Finish form
+
+
+
 
             //Choosing a step
             //If first step
@@ -89,7 +85,7 @@ namespace JFjewelery.Scenarios
                 "they will help you find the jewelry that suits you!");
 
                 //Compose buttons 
-                var keyboard =_buttonComposer.CreateKeyboard(firstStep, ExtraButtonType.Cancel);
+                var keyboard = _buttonComposer.CreateKeyboard(firstStep, ExtraButtonType.Cancel);
 
                 //Send the message to the client
                 await _botClient.SendTextMessageAsync(
@@ -124,7 +120,7 @@ namespace JFjewelery.Scenarios
                 //Null check
                 if (currentStep == null)
                     throw new Exception("currentStep could not be resolved.ScenarioPersonalForm_1");
-                if(update.CallbackQuery.Data == null)
+                if (update.CallbackQuery.Data == null)
                     throw new Exception("Responce could not be resolved.ScenarioPersonalForm_2");
 
                 var optionSelected = update.CallbackQuery.Data;
@@ -132,7 +128,7 @@ namespace JFjewelery.Scenarios
                 //Loging for debug
                 Console.WriteLine($"User selected option: {optionSelected}");
                 var currentOption = currentStep.Options.Where(o => o.Name == optionSelected).FirstOrDefault();
-                
+
                 //Quiz is finished before the last question
                 if (update.CallbackQuery.Data == "Finish")
                 {
@@ -170,7 +166,7 @@ namespace JFjewelery.Scenarios
 
                 await _sessionService.UpdateFilterCriteriaAsync(chatId, filterFromClient, FilterOperation.Add);
 
-                
+
 
 
                 //Move to next step
@@ -200,6 +196,8 @@ namespace JFjewelery.Scenarios
             }
         }
 
+        //To REDO
+
         public async Task FinishForm(Telegram.Bot.Types.Update update, CancellationToken cancellationToken)
         {
             var chatId = update.GetChatId();
@@ -226,7 +224,7 @@ namespace JFjewelery.Scenarios
 
                     await _botClient.SendPhotoAsync(
                         chatId: chatId,
-                        photo: InputFile.FromUri(imageUrl), 
+                        photo: InputFile.FromUri(imageUrl),
                         caption: $"{product.Name}\nPrice: {product.Price}\nQuantity: {product.Quantity}",
                         cancellationToken: cancellationToken);
                 }
@@ -242,9 +240,6 @@ namespace JFjewelery.Scenarios
             //Reset scenario
             await _sessionService.ResetSessionAsync(chatId);
         }
-
-
-
 
     }
 }

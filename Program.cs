@@ -63,23 +63,6 @@ class Program
         var botToken = configuration["TelegramBot:Token"];
         builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botToken));
 
-        ////Proxy
-        //builder.Services.AddSingleton<ITelegramBotClient>(sp =>
-        //{
-        //    var proxy = new HttpToSocks5Proxy(host, port);
-        //    var handler = new HttpClientHandler
-        //    {
-        //        Proxy = proxy,
-        //        UseProxy = true
-        //    };
-
-        //    var httpClient = new HttpClient(handler);
-
-        //    return new TelegramBotClient(botToken, httpClient);
-        //});
-
-
-
         // DB context
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         builder.Services.AddDbContext<AppDbContext>(options =>
@@ -95,7 +78,10 @@ class Program
         builder.Services.AddScoped<IChatSessionService, ChatSessionService>();
         builder.Services.AddScoped<IButtonComposer, ButtonComposer>();
         builder.Services.AddScoped<ICharacteristicsFilter, CharacteristicsFilter>();
+        builder.Services.AddScoped<IFileManager, FileManager>();
+        //Scenarios
         builder.Services.AddScoped<IBotScenario, ScenarioPersonalForm>();
+        builder.Services.AddScoped<IBotScenario, ScenarioImageCustom>();
 
         // Bot background service
         builder.Services.AddHostedService<BotService>();

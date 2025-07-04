@@ -135,7 +135,7 @@ namespace JFjewelery.Utility
 
                 var scenarioFromButton = _scenarios.FirstOrDefault(s => s.Name == callbackData);
 
-                // Scenario is just selected
+                // Scenario is just selected => set scenario to session
                 if (session.CurrentScenario == null && scenarioFromButton != null)
                 {
                     session.CurrentScenario = scenarioFromButton.Name;
