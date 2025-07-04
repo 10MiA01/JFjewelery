@@ -15,7 +15,7 @@ namespace JFjewelery.Services
 
         public InlineKeyboardMarkup CreateKeyboard(Step step, ExtraButtonType extraButtons = ExtraButtonType.None)
         {
-            var options = step.Options.ToList();
+            var options = step.Options?.ToList() ?? new List<Option>();
             var buttons = options
                     .Select(o => InlineKeyboardButton.WithCallbackData(o.Name, o.Name))
                     .Chunk(2)

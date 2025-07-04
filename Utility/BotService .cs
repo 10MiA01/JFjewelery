@@ -19,6 +19,7 @@ using JFjewelery.Extensions;
 using JFjewelery.Data;
 using Microsoft.EntityFrameworkCore;
 using JFjewelery.Models.Scenario;
+using JFjewelery.Models;
 
 
 
@@ -66,7 +67,7 @@ namespace JFjewelery.Utility
             var _chatSessionService = scope.ServiceProvider.GetRequiredService<IChatSessionService>();
             var _dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var _scenarios = await _dbContext.Scenarios.ToListAsync();
-
+            var _currentSession = await _chatSessionService.GetOrCteateSessionAsync(update);
 
 
             //For random message
@@ -93,7 +94,7 @@ namespace JFjewelery.Utility
             }
 
             //If /start
-            if(update.Type == UpdateType.Message && update.Message?.Text == "/start")
+            if (update.Type == UpdateType.Message && update.Message?.Text == "/start")
             {
                 //Cheking if we have the customer, if not yet=>create, reset chat state
                 var telegramAcc = update.Message.From?.Username
@@ -102,7 +103,7 @@ namespace JFjewelery.Utility
 
                 if (telegramAcc != null)
                 {
-                    var customer = await _customerService.GetOrCreateCustomerAsync( chatId,telegramAcc);
+                    var customer = await _customerService.GetOrCreateCustomerAsync(chatId, telegramAcc);
                     await _chatSessionService.ResetSessionAsync(chatId);
 
                 }
@@ -123,7 +124,17 @@ namespace JFjewelery.Utility
             }
 
             //Running the scenario
-            else if (update.Type == UpdateType.CallbackQuery)
+            else if (
+                update.Type == UpdateType.CallbackQuery ||      //Standers scenario
+                (
+                    update.Type == UpdateType.Message &&        //Picture scenario
+                    (
+                        update.Message?.Photo?.Any() == true ||
+                        (update.Message?.Document != null && update.Message.Document.MimeType?.StartsWith("image/") == true)
+                    ) &&
+                    _currentSession?.CurrentScenario == "Custom by picture"
+                )
+            )
             {
                 var telegramAcc = update.CallbackQuery.From?.Username
                     ?? update.CallbackQuery.From?.Id.ToString();

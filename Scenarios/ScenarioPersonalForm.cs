@@ -215,7 +215,7 @@ namespace JFjewelery.Scenarios
 
             foreach (var product in top3Products)
             {
-                var relativePath = product.Images.FirstOrDefault()?.FilePath;
+                var relativePath = product.Images?.FirstOrDefault()?.FilePath;
 
                 Console.WriteLine($"image url: {relativePath}");
 
