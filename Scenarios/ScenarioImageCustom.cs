@@ -49,151 +49,159 @@ namespace JFjewelery.Scenarios
             var session = await _sessionService.GetOrCteateSessionAsync(update)
                 ?? throw new Exception("Chat session not found");
 
-            //Send a message to get a picture
-            await _botClient.SendTextMessageAsync(
+            if (session.ScenarioStep == null)
+            {
+
+            }
+
+
+                //Send a message to get a picture
+                await _botClient.SendTextMessageAsync(
                 chatId: chatId,
                 text: $"Please send a picture as a reference for your jewels!",
                 cancellationToken: cancellationToken);
 
 
             //Get the picture
-            var picture = await _fileManager.DownloadPhotoAsync(update, cancellationToken)
-
+            var bytePicture = await _fileManager.DownloadPhotoAsync(update, cancellationToken);
 
             //Give it to Api
 
+            //To DO
 
             //Have product filter back
 
+            var responce = new ProductFilterCriteria();
 
             //Implement filter and return result
+
             //Finish form
 
 
 
 
-            //Choosing a step
-            //If first step
-            if (session.ScenarioStep == null)
-            {
-                var firstStep = _steps.First();
-                session.ScenarioStep = firstStep.Name;
-                await _dbContext.SaveChangesAsync();
+            ////Choosing a step
+            ////If first step
+            //if (session.ScenarioStep == null)
+            //{
+            //    var firstStep = _steps.First();
+            //    session.ScenarioStep = firstStep.Name;
+            //    await _dbContext.SaveChangesAsync();
 
-                //Send a introductory message
-                await _botClient.SendTextMessageAsync(chatId, "Now I'm going to ask you a couple of magic questions - " +
-                "they will help you find the jewelry that suits you!");
+            //    //Send a introductory message
+            //    await _botClient.SendTextMessageAsync(chatId, "Now I'm going to ask you a couple of magic questions - " +
+            //    "they will help you find the jewelry that suits you!");
 
-                //Compose buttons 
-                var keyboard = _buttonComposer.CreateKeyboard(firstStep, ExtraButtonType.Cancel);
+            //    //Compose buttons 
+            //    var keyboard = _buttonComposer.CreateKeyboard(firstStep, ExtraButtonType.Cancel);
 
-                //Send the message to the client
-                await _botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: $"{firstStep.QuestionText}",
-                replyMarkup: keyboard,
-                cancellationToken: cancellationToken);
+            //    //Send the message to the client
+            //    await _botClient.SendTextMessageAsync(
+            //    chatId: chatId,
+            //    text: $"{firstStep.QuestionText}",
+            //    replyMarkup: keyboard,
+            //    cancellationToken: cancellationToken);
 
-            }
+            //}
 
-            //If next step
-            else if (session.ScenarioStep != null)
-            {
-                //Quiz is cancelled
-                if (update.CallbackQuery.Data == "Cancel")
-                {
-                    await _sessionService.ResetSessionAsync(chatId);
+            ////If next step
+            //else if (session.ScenarioStep != null)
+            //{
+            //    //Quiz is cancelled
+            //    if (update.CallbackQuery.Data == "Cancel")
+            //    {
+            //        await _sessionService.ResetSessionAsync(chatId);
 
-                    await _botClient.SendTextMessageAsync(
-                    chatId: chatId,
-                    text: $"Soryy, if you didn't like the quiz, but you can choose another one! Just send /start",
-                    cancellationToken: cancellationToken);
-                    return;
-                }
+            //        await _botClient.SendTextMessageAsync(
+            //        chatId: chatId,
+            //        text: $"Soryy, if you didn't like the quiz, but you can choose another one! Just send /start",
+            //        cancellationToken: cancellationToken);
+            //        return;
+            //    }
 
-                //Get a step
-                var currentStep = _steps.Where(s => s.Name == session.ScenarioStep).FirstOrDefault();
+            //    //Get a step
+            //    var currentStep = _steps.Where(s => s.Name == session.ScenarioStep).FirstOrDefault();
 
-                //Loging for debug
-                Console.WriteLine($"Step: {currentStep.Name}, Options: {string.Join(", ", currentStep.Options.Select(o => o.Name))}");
+            //    //Loging for debug
+            //    Console.WriteLine($"Step: {currentStep.Name}, Options: {string.Join(", ", currentStep.Options.Select(o => o.Name))}");
 
-                //Null check
-                if (currentStep == null)
-                    throw new Exception("currentStep could not be resolved.ScenarioPersonalForm_1");
-                if (update.CallbackQuery.Data == null)
-                    throw new Exception("Responce could not be resolved.ScenarioPersonalForm_2");
+            //    //Null check
+            //    if (currentStep == null)
+            //        throw new Exception("currentStep could not be resolved.ScenarioPersonalForm_1");
+            //    if (update.CallbackQuery.Data == null)
+            //        throw new Exception("Responce could not be resolved.ScenarioPersonalForm_2");
 
-                var optionSelected = update.CallbackQuery.Data;
+            //    var optionSelected = update.CallbackQuery.Data;
 
-                //Loging for debug
-                Console.WriteLine($"User selected option: {optionSelected}");
-                var currentOption = currentStep.Options.Where(o => o.Name == optionSelected).FirstOrDefault();
+            //    //Loging for debug
+            //    Console.WriteLine($"User selected option: {optionSelected}");
+            //    var currentOption = currentStep.Options.Where(o => o.Name == optionSelected).FirstOrDefault();
 
-                //Quiz is finished before the last question
-                if (update.CallbackQuery.Data == "Finish")
-                {
-                    await _botClient.SendTextMessageAsync(
-                    chatId: chatId,
-                    text: $"Here is the result based on your replies! Hope you'll like :)",
-                    cancellationToken: cancellationToken);
+            //    //Quiz is finished before the last question
+            //    if (update.CallbackQuery.Data == "Finish")
+            //    {
+            //        await _botClient.SendTextMessageAsync(
+            //        chatId: chatId,
+            //        text: $"Here is the result based on your replies! Hope you'll like :)",
+            //        cancellationToken: cancellationToken);
 
-                    await FinishForm(update, cancellationToken);
+            //        await FinishForm(update, cancellationToken);
 
-                    await _sessionService.ResetSessionAsync(chatId);
-                    return;
-                }
+            //        await _sessionService.ResetSessionAsync(chatId);
+            //        return;
+            //    }
 
-                //Null check
-                if (currentOption == null)
-                {
-                    await _botClient.SendTextMessageAsync(
-                    chatId: chatId,
-                    text: $"An Error occured. Send /start to start chat",
-                    cancellationToken: cancellationToken);
-                    //return;
-                }
+            //    //Null check
+            //    if (currentOption == null)
+            //    {
+            //        await _botClient.SendTextMessageAsync(
+            //        chatId: chatId,
+            //        text: $"An Error occured. Send /start to start chat",
+            //        cancellationToken: cancellationToken);
+            //        //return;
+            //    }
 
-                //get and apply filters
-                ProductFilterCriteria filterFromClient;
-                if (currentOption.FilterJson == null || string.IsNullOrEmpty(session.FilterJson))
-                {
-                    filterFromClient = new ProductFilterCriteria();
-                }
-                else
-                {
-                    filterFromClient = JsonSerializer.Deserialize<ProductFilterCriteria>(currentOption.FilterJson) ?? new ProductFilterCriteria();
-                }
+            //    //get and apply filters
+            //    ProductFilterCriteria filterFromClient;
+            //    if (currentOption.FilterJson == null || string.IsNullOrEmpty(session.FilterJson))
+            //    {
+            //        filterFromClient = new ProductFilterCriteria();
+            //    }
+            //    else
+            //    {
+            //        filterFromClient = JsonSerializer.Deserialize<ProductFilterCriteria>(currentOption.FilterJson) ?? new ProductFilterCriteria();
+            //    }
 
-                await _sessionService.UpdateFilterCriteriaAsync(chatId, filterFromClient, FilterOperation.Add);
-
-
+            //    await _sessionService.UpdateFilterCriteriaAsync(chatId, filterFromClient, FilterOperation.Add);
 
 
-                //Move to next step
-                if (currentStep.NextStep == null)
-                {
-                    await FinishForm(update, cancellationToken);
-                    return;
-                }
-                else
-                {
-                    currentStep = currentStep.NextStep;
-                    session.ScenarioStep = currentStep.Name;
-                    await _sessionService.UpdateSessionAsync(session);
-                }
-
-                //Compose buttons 
-                var keyboard = _buttonComposer.CreateKeyboard(currentStep, ExtraButtonType.FinishAndCancel);
-
-                //Send the message to the client
-                await _botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: $"{currentStep.QuestionText}",
-                replyMarkup: keyboard,
-                cancellationToken: cancellationToken);
 
 
-            }
+            //    //Move to next step
+            //    if (currentStep.NextStep == null)
+            //    {
+            //        await FinishForm(update, cancellationToken);
+            //        return;
+            //    }
+            //    else
+            //    {
+            //        currentStep = currentStep.NextStep;
+            //        session.ScenarioStep = currentStep.Name;
+            //        await _sessionService.UpdateSessionAsync(session);
+            //    }
+
+            //    //Compose buttons 
+            //    var keyboard = _buttonComposer.CreateKeyboard(currentStep, ExtraButtonType.FinishAndCancel);
+
+            //    //Send the message to the client
+            //    await _botClient.SendTextMessageAsync(
+            //    chatId: chatId,
+            //    text: $"{currentStep.QuestionText}",
+            //    replyMarkup: keyboard,
+            //    cancellationToken: cancellationToken);
+
+
+            //}
         }
 
         //To REDO
@@ -217,24 +225,24 @@ namespace JFjewelery.Scenarios
 
                 Console.WriteLine($"image url: {relativePath}");
 
-                if (!string.IsNullOrEmpty(relativePath))
-                {
-                    var imageUrl = new Uri(_baseUri, relativePath.Replace("\\", "/")).ToString();
-                    Console.WriteLine($"Full image URL: {imageUrl}");
+                //if (!string.IsNullOrEmpty(relativePath))
+                //{
+                //    var imageUrl = new Uri(_baseUri, relativePath.Replace("\\", "/")).ToString();
+                //    Console.WriteLine($"Full image URL: {imageUrl}");
 
-                    await _botClient.SendPhotoAsync(
-                        chatId: chatId,
-                        photo: InputFile.FromUri(imageUrl),
-                        caption: $"{product.Name}\nPrice: {product.Price}\nQuantity: {product.Quantity}",
-                        cancellationToken: cancellationToken);
-                }
-                else
-                {
-                    await _botClient.SendTextMessageAsync(
-                        chatId: chatId,
-                        text: $"{product.Name}\nPrice: {product.Price}\nQuantity: {product.Quantity}",
-                        cancellationToken: cancellationToken);
-                }
+                //    await _botClient.SendPhotoAsync(
+                //        chatId: chatId,
+                //        photo: InputFile.FromUri(imageUrl),
+                //        caption: $"{product.Name}\nPrice: {product.Price}\nQuantity: {product.Quantity}",
+                //        cancellationToken: cancellationToken);
+                //}
+                //else
+                //{
+                //    await _botClient.SendTextMessageAsync(
+                //        chatId: chatId,
+                //        text: $"{product.Name}\nPrice: {product.Price}\nQuantity: {product.Quantity}",
+                //        cancellationToken: cancellationToken);
+                //}
             }
 
             //Reset scenario
