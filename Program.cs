@@ -36,29 +36,34 @@ class Program
         var isProd = builder.Environment.IsProduction();
 
         // Get baseUrl depending on the environment
-        var baseUrl = isProd
-            ? "https://raw.githubusercontent.com/10MiA01/JFjewelery/master/"
-            : configuration["BaseUrl"];
+        var listenUrl = configuration["MyApp:ListenAddress"];
+        var staticBaseUrl = configuration["MyApp:StaticBaseUrl"];
 
-        var baseUri = new Uri(baseUrl!);
-        builder.Services.AddSingleton(baseUri);
+        var listenUri = new Uri(listenUrl!);
+        var staticUri = new Uri(staticBaseUrl!);
+
+        builder.Services.AddSingleton(staticUri);
+
+        Console.WriteLine($"[DEBUG] Base URL: {staticUri}");
 
         // If not in production, extract host and port and configure Kestrel manually
-        if (!isProd)
+        var apiBaseUrl = builder.Configuration["ApiManager:BaseUrl"];
+        if (string.IsNullOrWhiteSpace(apiBaseUrl))
         {
-            var host = baseUri.Host; // e.g., "192.168.0.115"
-            var port = baseUri.Port; // e.g., 50413
-
-            // Clear default URLs and configure Kestrel to listen on the specified port
-            builder.WebHost.UseUrls();
-            builder.WebHost.ConfigureKestrel(options =>
-            {
-                options.Listen(System.Net.IPAddress.Any, port);
-            });
+            throw new InvalidOperationException("ApiManager:BaseUrl is not set in configuration.");
         }
+        Console.WriteLine($"[DEBUG] API Base URL: {apiBaseUrl}");
 
 
+        // Get Url for api
+        builder.Services.AddHttpClient<IApiManager, ApiManager>(client =>
+        {
+            client.BaseAddress = new Uri(apiBaseUrl);
+        });
 
+        Console.WriteLine($"[DEBUG] Base URL: {staticUri}");
+
+        
         // Telegram bot
         var botToken = configuration["TelegramBot:Token"];
         builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botToken));
@@ -79,6 +84,7 @@ class Program
         builder.Services.AddScoped<IButtonComposer, ButtonComposer>();
         builder.Services.AddScoped<ICharacteristicsFilter, CharacteristicsFilter>();
         builder.Services.AddScoped<IFileManager, FileManager>();
+
         //Scenarios
         builder.Services.AddScoped<IBotScenario, ScenarioPersonalForm>();
         builder.Services.AddScoped<IBotScenario, ScenarioImageCustom>();

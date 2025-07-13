@@ -125,7 +125,7 @@ namespace JFjewelery.Utility
 
             //Running the scenario
             else if (
-                update.Type == UpdateType.CallbackQuery ||      //Standers scenario
+                update.Type == UpdateType.CallbackQuery ||      //Standart scenario
                 (
                     update.Type == UpdateType.Message &&        //Picture scenario
                     (
@@ -136,34 +136,44 @@ namespace JFjewelery.Utility
                 )
             )
             {
-                var telegramAcc = update.CallbackQuery.From?.Username
-                    ?? update.CallbackQuery.From?.Id.ToString();
+                var telegramAcc = update.CallbackQuery?.From?.Username
+                    ?? update.Message?.From?.Username
+                    ?? update.CallbackQuery?.From?.Id.ToString()
+                    ?? update.Message?.From?.Id.ToString();
+
 
                 var chatId = update.GetChatId();
                 var customer = await _customerService.GetOrCreateCustomerAsync(chatId, telegramAcc);
                 var session = customer.ChatSession;
-                var callbackData = update.CallbackQuery.Data;
+                if ( session == null) { await _chatSessionService.GetOrCteateSessionAsync(update); } 
+                    
+                    
 
-                var scenarioFromButton = _scenarios.FirstOrDefault(s => s.Name == callbackData);
-
-                // Scenario is just selected => set scenario to session
-                if (session.CurrentScenario == null && scenarioFromButton != null)
+                if (update.CallbackQuery != null)
                 {
-                    session.CurrentScenario = scenarioFromButton.Name;
-                    session.ScenarioStep = null;
-                    await _chatSessionService.UpdateSessionAsync(session);
+                    var callbackData = update.CallbackQuery.Data;
+                    var scenarioFromButton = _scenarios.FirstOrDefault(s => s.Name == callbackData);
 
-                    var handler = _scenarioServices
-                        .FirstOrDefault(s => s.Names.Contains(session.CurrentScenario));
-
-                    if (handler != null)
+                    // Scenario is just selected => set scenario to session
+                    if (session!.CurrentScenario == null && scenarioFromButton != null)
                     {
-                        await handler.ExecuteAsync(update, cancellationToken);
+                        session.CurrentScenario = scenarioFromButton.Name;
+                        session.ScenarioStep = null;
+                        await _chatSessionService.UpdateSessionAsync(session);
+
+                        var handler = _scenarioServices
+                            .FirstOrDefault(s => s.Names.Contains(session.CurrentScenario));
+
+                        if (handler != null)
+                        {
+                            await handler.ExecuteAsync(update, cancellationToken);
+                        }
                     }
                 }
+         
 
                 // Scenario is already selected => continue
-                else if (session.CurrentScenario != null)
+                else if (session!.CurrentScenario != null)
                 {
                     var handler = _scenarioServices
                         .FirstOrDefault(s => s.Names.Contains(session.CurrentScenario));

@@ -11,26 +11,26 @@ namespace JFjewelery.Models.DTO
 
         //General
         public string? Gender { get; set; }
-        public List<string> Styles { get; set; } = new();
-        public List<string> Manufacturers { get; set; } = new();
+        public List<string>? Styles { get; set; }
+        public List<string>? Manufacturers { get; set; }
         public string? Description { get; set; }
 
         //For Metals
-        public List<string> Metals { get; set; } = new();
-        public List<string> MetalShapes { get; set; } = new();
-        public List<string> MetalColors { get; set; } = new();
-        public List<string> MetalSizes { get; set; } = new();
-        public List<string> MetalTypes { get; set; } = new();
+        public List<string>? Metals { get; set; }
+        public List<string>? MetalShapes { get; set; }
+        public List<string>? MetalColors { get; set; } 
+        public List<string>? MetalSizes { get; set; }
+        public List<string>? MetalTypes { get; set; }
         public int? Purity { get; set; }
         public float? WeightMin { get; set; }
         public float? WeightMax { get; set; }
 
         //For Stones
-        public List<string> Stones { get; set; } = new();
-        public List<string> StoneShapes { get; set; } = new();
-        public List<string> StoneColors { get; set; } = new();
-        public List<string> StoneSizes { get; set; } = new();
-        public List<string> StoneTypes { get; set; } = new();
+        public List<string>? Stones { get; set; } 
+        public List<string>? StoneShapes { get; set; } 
+        public List<string>? StoneColors { get; set; }
+        public List<string>? StoneSizes { get; set; } 
+        public List<string>? StoneTypes { get; set; } 
         public int? CountMin { get; set; }
         public int? CountMax { get; set; }
 

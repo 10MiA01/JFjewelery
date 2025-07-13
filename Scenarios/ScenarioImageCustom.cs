@@ -15,30 +15,31 @@ namespace JFjewelery.Scenarios
     {
         
 
-        private readonly Uri _baseUri;
+        private readonly Uri _staticBaseUri;
         private readonly ITelegramBotClient _botClient;
         private readonly IChatSessionService _sessionService;
         private readonly IButtonComposer _buttonComposer;
         private readonly ICharacteristicsFilter _characteristicsFilter;
         private readonly AppDbContext _dbContext;
         private readonly IFileManager _fileManager;
+        private readonly IApiManager _apiManager;
 
         public List<string> Names => new() { "Custom by picture" };
 
         public Scenario _scenario;
         public List<Step> _steps;
 
-        public ScenarioImageCustom(Uri baseUri, ITelegramBotClient botClient, IChatSessionService sessionService, IButtonComposer buttonComposer, 
-            ICharacteristicsFilter characteristicsFilter, AppDbContext dbContext, IFileManager fileManager)
+        public ScenarioImageCustom(Uri staticBaseUri, ITelegramBotClient botClient, IChatSessionService sessionService, IButtonComposer buttonComposer, 
+            ICharacteristicsFilter characteristicsFilter, AppDbContext dbContext, IFileManager fileManager, IApiManager apiManager)
         {
-            _baseUri = baseUri; //reference, not an instance
+            _staticBaseUri = staticBaseUri; //reference, not an instance
             _botClient = botClient;
             _sessionService = sessionService;
             _buttonComposer = buttonComposer;
             _characteristicsFilter = characteristicsFilter;
             _dbContext = dbContext;
             _fileManager = fileManager;
-
+            _apiManager = apiManager;
         }
 
 
@@ -97,14 +98,13 @@ namespace JFjewelery.Scenarios
 
             //Get the picture
             var bytePicture = await _fileManager.DownloadPhotoAsync(update, cancellationToken);
+            if (bytePicture == null)
+            {
+                throw new Exception("image could not be resolved");
+            }
 
-            //Give it to Api
-
-            //To DO
-
-            //Have product filter back
-
-            var responceFilter = new ProductFilterCriteria();
+            //Give it to Api and have product filter back
+            var responceFilter = await _apiManager.AnalyzeImageAsync(bytePicture);
 
             //Implement filter and return result
             await _sessionService.UpdateFilterCriteriaAsync(chatId, responceFilter, FilterOperation.Add);
@@ -138,7 +138,7 @@ namespace JFjewelery.Scenarios
 
                 if (!string.IsNullOrEmpty(relativePath))
                 {
-                    var imageUrl = new Uri(_baseUri, relativePath.Replace("\\", "/")).ToString();
+                    var imageUrl = new Uri(_staticBaseUri, relativePath.Replace("\\", "/")).ToString();
                     Console.WriteLine($"Full image URL: {imageUrl}");
 
                     await _botClient.SendPhotoAsync(
