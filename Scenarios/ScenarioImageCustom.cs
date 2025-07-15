@@ -43,7 +43,6 @@ namespace JFjewelery.Scenarios
         }
 
 
-        //To REDO
         public async Task ExecuteAsync(Telegram.Bot.Types.Update update, CancellationToken cancellationToken)
         {
 
@@ -114,8 +113,6 @@ namespace JFjewelery.Scenarios
             return;
             
         }
-
-        //To REDO
 
         public async Task FinishForm(Telegram.Bot.Types.Update update, CancellationToken cancellationToken)
         {

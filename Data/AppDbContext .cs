@@ -1569,6 +1569,25 @@ namespace JFjewelery.Data
                 }
             );
 
+            // Scenario 5, steps
+            modelBuilder.Entity<Step>().HasData(
+                new Step
+                {
+                    Id = 20,
+                    Name = "Select category",
+                    QuestionText = "Please select a category.",
+                    NextStepId = 21,
+                    ScenarioId = 5
+                },
+                new Step
+                {
+                    Id = 21,
+                    Name = "Get photo",
+                    QuestionText = "Please send a photo.",
+                    ScenarioId = 5
+                }
+            );
+
 
 
 

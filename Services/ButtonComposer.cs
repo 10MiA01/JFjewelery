@@ -64,6 +64,11 @@ namespace JFjewelery.Services
             }
         }
 
-        
+        //public InlineKeyboardMarkup CreateFromCategories()
+        //{
+
+        //}
+
+
     }
 }
