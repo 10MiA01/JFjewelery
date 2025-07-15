@@ -88,6 +88,7 @@ class Program
         //Scenarios
         builder.Services.AddScoped<IBotScenario, ScenarioPersonalForm>();
         builder.Services.AddScoped<IBotScenario, ScenarioImageCustom>();
+        builder.Services.AddScoped<IBotScenario, ScenarioTryOn>();
 
         // Bot background service
         builder.Services.AddHostedService<BotService>();

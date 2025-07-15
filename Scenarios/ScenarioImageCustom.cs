@@ -55,7 +55,7 @@ namespace JFjewelery.Scenarios
             var scenario = session.CurrentScenario;
             _scenario = await _dbContext.Scenarios
             .Include(s => s.Steps)
-            .Include(s => s.Steps)
+                .ThenInclude(step => step.NextStep)
             .FirstOrDefaultAsync(s => s.Name == scenario);
 
             if (_scenario == null)

@@ -13,5 +13,6 @@ namespace JFjewelery.Services.Interfaces
     {
         InlineKeyboardMarkup CreateKeyboard(Step step, ExtraButtonType extraButtons);
         InlineKeyboardButton[] AddExtraButtons(ExtraButtonType extraButtons);
+        InlineKeyboardMarkup CreateFromCategories(List<string> categories, ExtraButtonType extraButtons);
     }
 }

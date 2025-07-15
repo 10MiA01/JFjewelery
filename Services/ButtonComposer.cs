@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using JFjewelery.Models.Enums;
 using JFjewelery.Models.Scenario;
 using JFjewelery.Services.Interfaces;
+using Microsoft.Extensions.Options;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace JFjewelery.Services
@@ -37,6 +38,29 @@ namespace JFjewelery.Services
 
         }
 
+        public InlineKeyboardMarkup CreateFromCategories(List<string> categories, ExtraButtonType extraButtons = ExtraButtonType.None)
+        {
+            var buttons = categories
+                .Select(name => InlineKeyboardButton.WithCallbackData(name, name))
+                .Chunk(2)
+                .ToList();
+
+
+            if (extraButtons == ExtraButtonType.None)
+            {
+                var keyboard = new InlineKeyboardMarkup(buttons);
+                return keyboard;
+            }
+            else
+            {
+                var addButtons = AddExtraButtons(extraButtons);
+                buttons.Add(addButtons);
+                var keyboard = new InlineKeyboardMarkup(buttons);
+                return keyboard;
+            }
+        }
+
+
         public InlineKeyboardButton[] AddExtraButtons(ExtraButtonType extraButtons)
         {
             if (extraButtons == ExtraButtonType.Finish)
@@ -64,10 +88,7 @@ namespace JFjewelery.Services
             }
         }
 
-        //public InlineKeyboardMarkup CreateFromCategories()
-        //{
-
-        //}
+        
 
 
     }

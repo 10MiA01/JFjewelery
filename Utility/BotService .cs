@@ -132,7 +132,7 @@ namespace JFjewelery.Utility
                         update.Message?.Photo?.Any() == true ||
                         (update.Message?.Document != null && update.Message.Document.MimeType?.StartsWith("image/") == true)
                     ) &&
-                    _currentSession?.CurrentScenario == "Custom by picture"
+                    (_currentSession?.CurrentScenario == "Custom by picture" || _currentSession?.CurrentScenario == "Virtual fitting")
                 )
             )
             {
