@@ -72,6 +72,7 @@ namespace JFjewelery.Scenarios
 
             if (session.ScenarioStep == null)
             {
+                Console.WriteLine("Got into scenario_1");
                 //Set a step
                 var firstStep = _steps.First();
                 session.ScenarioStep = firstStep.Name;
@@ -92,6 +93,8 @@ namespace JFjewelery.Scenarios
             else if (session.ScenarioStep != null && update.CallbackQuery != null)
             {
 
+                Console.WriteLine("Got into scenario_2");
+
                 //Quiz is cancelled
                 if (update.CallbackQuery?.Data == "Cancel")
                 {
@@ -110,6 +113,7 @@ namespace JFjewelery.Scenarios
 
                 //Analyze category selected => chat session Temp data
                 var categorySelected = update.CallbackQuery.Data.Replace(" ", "_");
+                Console.WriteLine($"Selected category : {categorySelected}");
 
                 //Get the instruvction
                 if (Enum.TryParse<CategoryTryOnInstructions>(categorySelected, out var categoryEnum))
@@ -137,6 +141,8 @@ namespace JFjewelery.Scenarios
                 currentStep = currentStep.NextStep;
                 session.ScenarioStep = currentStep.Name;
                 await _sessionService.UpdateSessionAsync(session);
+
+                return;
                 
             }
 

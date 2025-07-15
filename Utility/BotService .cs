@@ -69,6 +69,11 @@ namespace JFjewelery.Utility
             var _scenarios = await _dbContext.Scenarios.ToListAsync();
             var _currentSession = await _chatSessionService.GetOrCteateSessionAsync(update);
 
+            if (update.Type == UpdateType.CallbackQuery)
+            {
+                Console.WriteLine("CallbackQuery received:");
+                Console.WriteLine(update.CallbackQuery.Data);
+            }
 
             //For random message
             if (update.Type == UpdateType.Message && update.Message!.Text != null && update.Message?.Text != "/start")
@@ -149,7 +154,7 @@ namespace JFjewelery.Utility
                     
                     
 
-                if (update.CallbackQuery != null)
+                if (update.CallbackQuery != null && session!.CurrentScenario == null)
                 {
                     var callbackData = update.CallbackQuery.Data;
                     var scenarioFromButton = _scenarios.FirstOrDefault(s => s.Name == callbackData);
@@ -173,8 +178,9 @@ namespace JFjewelery.Utility
          
 
                 // Scenario is already selected => continue
-                else if (session!.CurrentScenario != null)
+                else if (update.CallbackQuery != null && session!.CurrentScenario != null)
                 {
+                    Console.WriteLine("Trying to get in scenario 5_2");
                     var handler = _scenarioServices
                         .FirstOrDefault(s => s.Names.Contains(session.CurrentScenario));
 
