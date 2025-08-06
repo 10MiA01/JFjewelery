@@ -1,5 +1,6 @@
 ﻿using JFjewelery.Data;
 using JFjewelery.Extensions;
+using JFjewelery.Models;
 using JFjewelery.Models.DTO;
 using JFjewelery.Models.Enums;
 using JFjewelery.Models.Helpers;
@@ -9,6 +10,8 @@ using JFjewelery.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using System.Net.Http;
+
 
 namespace JFjewelery.Scenarios
 {
@@ -115,7 +118,7 @@ namespace JFjewelery.Scenarios
                 var categorySelected = update.CallbackQuery.Data.Replace(" ", "_");
                 Console.WriteLine($"Selected category : {categorySelected}");
 
-                //Get the instruvction
+                //Get the instruction
                 if (Enum.TryParse<CategoryTryOnInstructions>(categorySelected, out var categoryEnum))
                 {
                     string instruction = CategoryInstructions.Instructions[categoryEnum];
@@ -172,18 +175,27 @@ namespace JFjewelery.Scenarios
                 // Get random product
                 var random = new Random();
                 var randomProduct = productsForCategory[random.Next(productsForCategory.Count)];
+                int productId = randomProduct.Id;
+                string productCategory = randomProduct.Category.Name.Replace(" ", "_");
 
+                // Ckeking 
+                Console.WriteLine($"Sending category: {productCategory}");
+                Console.WriteLine($"Sending id: {productId}");
+                Console.WriteLine($"Image bytes length: {bytePicture.Length}");
 
+                //Give image to api 
+                byte[] imageBytes = await _apiManager.TryOnAsync(bytePicture, productCategory, productId);
 
-
-                //Give picture and a product image? it to Api and have product filter back
-                //To REDO
-                var image = await _apiManager.AnalyzeImageAsync(bytePicture);
-
-
-                //Save picture in temp data
-                //Implement filter and return result
-
+                //Send image
+                using (var stream = new MemoryStream(imageBytes))
+                {
+                    await _botClient.SendPhotoAsync(
+                        chatId: chatId,
+                        photo: InputFile.FromStream(stream, "result.png"),
+                        caption: "Here is your fitting!",
+                        cancellationToken: cancellationToken
+                    );
+                }
                 //Finish form
                 await FinishForm(update, cancellationToken);
                 return;
@@ -195,10 +207,6 @@ namespace JFjewelery.Scenarios
             var chatId = update.GetChatId();
             var session = await _sessionService.GetOrCteateSessionAsync(update)
                 ?? throw new Exception("Chat session not found");
-            //Get the temp data
-            var finalPictureBytes = session.TempData;
-            //Send a restored picture
-
             //Reset scenario
             await _sessionService.ResetSessionAsync(chatId);
         }

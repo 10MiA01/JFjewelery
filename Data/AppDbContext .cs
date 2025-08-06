@@ -198,6 +198,10 @@ namespace JFjewelery.Data
                 new Product { Id = 7, Name = "Sea tear", CategoryId = 1, Quantity = 10, Price = 2000 },
                 new Product { Id = 8, Name = "Demon's eye", CategoryId = 1, Quantity = 10, Price = 3000 }
                 );
+            modelBuilder.Entity<Product>().HasData(
+                new Product { Id = 9, Name = "Fox tail", CategoryId = 3, Quantity = 10, Price = 2000},
+                new Product { Id = 10, Name = "Queen", CategoryId = 3, Quantity = 10, Price = 2500 }
+                );
 
             modelBuilder.Entity<ProductImage>().HasData(
                 new ProductImage { Id = 1, ProductId = 1, FileName = "prod_1_front_1.jpg" },
@@ -208,6 +212,10 @@ namespace JFjewelery.Data
                 new ProductImage { Id = 6, ProductId = 6, FileName = "prod_6_front_1.jpg" },
                 new ProductImage { Id = 7, ProductId = 7, FileName = "prod_7_front_1.jpg" },
                 new ProductImage { Id = 8, ProductId = 8, FileName = "prod_8_front_1.jpg" }
+                );
+            modelBuilder.Entity<ProductImage>().HasData(
+                new ProductImage { Id = 9, ProductId = 9, FileName = "prod_9_front_1.jpg" },
+                new ProductImage { Id = 10, ProductId = 10, FileName = "prod_10_front_1.jpg" }
                 );
 
             modelBuilder.Entity<Characteristic>().HasData(
@@ -271,6 +279,25 @@ namespace JFjewelery.Data
                     Id = 8,
                     ProductId = 8,
                     Gender = "Men",
+                    Style = "Vintage",
+                    Manufacturer = "JFjewelery"
+                }
+            );
+
+            modelBuilder.Entity<Characteristic>().HasData(
+                new Characteristic
+                {
+                    Id = 9,
+                    ProductId = 9,
+                    Gender = "Women",
+                    Style = "Romantic",
+                    Manufacturer = "JFjewelery"
+                },
+                new Characteristic
+                {
+                    Id = 10,
+                    ProductId = 10,
+                    Gender = "Both",
                     Style = "Vintage",
                     Manufacturer = "JFjewelery"
                 }
@@ -360,6 +387,30 @@ namespace JFjewelery.Data
                 {
                     Id = 8,
                     CharacteristicId = 8,
+                    MetalId = 1,        // Gold
+                    ColorId = 2,        // Gold
+                    SizeId = 2,         // Medium
+                    TypeId = 1,         // Gold
+                    Purity = 585,
+                    Weight = 20
+                }
+            );
+            modelBuilder.Entity<CharacteristicMetal>().HasData(
+                new CharacteristicMetal
+                {
+                    Id = 9,
+                    CharacteristicId = 9,
+                    MetalId = 1,        // Gold
+                    ColorId = 2,        // Gold
+                    SizeId = 2,         // Medium
+                    TypeId = 1,         // Gold
+                    Purity = 585,
+                    Weight = 15
+                },
+                new CharacteristicMetal
+                {
+                    Id = 10,
+                    CharacteristicId = 10,
                     MetalId = 1,        // Gold
                     ColorId = 2,        // Gold
                     SizeId = 2,         // Medium
@@ -550,6 +601,20 @@ namespace JFjewelery.Data
                     ColorId = 15,       // Black
                     SizeId = 4,        // Tiny (stone)
                     Count = 12
+                }
+            );
+
+            modelBuilder.Entity<CharacteristicStone>().HasData(
+                new CharacteristicStone
+                {
+                    Id = 15,
+                    CharacteristicId = 10,
+                    StoneId = 7,       // Spinel
+                    ShapeId = 12,       // Round
+                    ColorId = 14,       // White
+                    TypeId = 9,         //Pure
+                    SizeId = 5,        // Regular (stone)
+                    Count = 1
                 }
             );
 

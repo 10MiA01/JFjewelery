@@ -178,7 +178,14 @@ namespace JFjewelery.Utility
          
 
                 // Scenario is already selected => continue
-                else if (update.CallbackQuery != null && session!.CurrentScenario != null)
+                else if ((update.CallbackQuery != null && session!.CurrentScenario != null) ||
+                    (update.Type == UpdateType.Message &&        //Picture scenario
+                    (
+                        update.Message?.Photo?.Any() == true ||
+                        (update.Message?.Document != null && update.Message.Document.MimeType?.StartsWith("image/") == true)
+                    ) &&
+                    (_currentSession?.CurrentScenario == "Custom by picture" || _currentSession?.CurrentScenario == "Virtual fitting"))
+                    )
                 {
                     Console.WriteLine("Trying to get in scenario 5_2");
                     var handler = _scenarioServices
