@@ -11,6 +11,7 @@ using JFjewelery.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using static System.Collections.Specialized.BitVector32;
 using JFjewelery.Models;
+using JFjewelery.Models.Helpers;
 using System.Diagnostics.Metrics;
 using System.Reflection.PortableExecutable;
 
@@ -83,40 +84,40 @@ namespace JFjewelery.Services
             int matchScore = 0;
 
             if (clientFilter.Gender != null && clientFilter.Gender == productFilter.Gender)
-                matchScore += 50;
+                matchScore += ProductFilterScore.Weights["Gender"];
 
-            matchScore += productFilter.Styles?.Count(style => clientFilter.Styles?.Contains(style) == true) ?? 0;
-            matchScore += productFilter.Manufacturers?.Count(manuf => clientFilter.Manufacturers?.Contains(manuf) == true) ?? 0;
+            matchScore += (productFilter.Styles?.Count(style => clientFilter.Styles?.Contains(style) == true) ?? 0) * ProductFilterScore.Weights["Style"];
+            matchScore += (productFilter.Manufacturers?.Count(manuf => clientFilter.Manufacturers?.Contains(manuf) == true) ?? 0) * ProductFilterScore.Weights["Manufacturer"];
 
             if (!string.IsNullOrEmpty(productFilter.Description) && clientFilter.Description?.Contains(productFilter.Description) == true)
-                matchScore += 10;
+                matchScore += ProductFilterScore.Weights["Description"];
 
-            matchScore += productFilter.Metals?.Count(m => clientFilter.Metals?.Contains(m) == true) ?? 0;
-            matchScore += productFilter.MetalShapes?.Count(s => clientFilter.MetalShapes?.Contains(s) == true) ?? 0;
-            matchScore += productFilter.MetalColors?.Count(c => clientFilter.MetalColors?.Contains(c) == true) ?? 0;
-            matchScore += productFilter.MetalSizes?.Count(s => clientFilter.MetalSizes?.Contains(s) == true) ?? 0;
-            matchScore += productFilter.MetalTypes?.Count(t => clientFilter.MetalTypes?.Contains(t) == true) ?? 0;
+            matchScore += (productFilter.Metals?.Count(m => clientFilter.Metals?.Contains(m) == true) ?? 0) * ProductFilterScore.Weights["Metal"];
+            matchScore += (productFilter.MetalShapes?.Count(s => clientFilter.MetalShapes?.Contains(s) == true) ?? 0) * ProductFilterScore.Weights["MetalShape"];
+            matchScore += (productFilter.MetalColors?.Count(c => clientFilter.MetalColors?.Contains(c) == true) ?? 0) * ProductFilterScore.Weights["MetalColor"];
+            matchScore += (productFilter.MetalSizes?.Count(s => clientFilter.MetalSizes?.Contains(s) == true) ?? 0) * ProductFilterScore.Weights["MetalSize"];
+            matchScore += (productFilter.MetalTypes?.Count(t => clientFilter.MetalTypes?.Contains(t) == true) ?? 0) * ProductFilterScore.Weights["MetalType"];
 
             if (productFilter.Purity != null && clientFilter.Purity == productFilter.Purity)
-                matchScore++;
+                matchScore += ProductFilterScore.Weights["Purity"];
 
             if (productFilter.WeightMin != null && clientFilter.WeightMin != null && clientFilter.WeightMin <= productFilter.WeightMin)
-                matchScore++;
+                matchScore += ProductFilterScore.Weights["Weight"];
 
             if (productFilter.WeightMax != null && clientFilter.WeightMax != null && clientFilter.WeightMax >= productFilter.WeightMax)
-                matchScore++;
+                matchScore += ProductFilterScore.Weights["Weight"];
 
-            matchScore += productFilter.Stones?.Count(s => clientFilter.Stones?.Contains(s) == true) ?? 0;
-            matchScore += productFilter.StoneShapes?.Count(s => clientFilter.StoneShapes?.Contains(s) == true) ?? 0;
-            matchScore += productFilter.StoneColors?.Count(c => clientFilter.StoneColors?.Contains(c) == true) ?? 0;
-            matchScore += productFilter.StoneSizes?.Count(s => clientFilter.StoneSizes?.Contains(s) == true) ?? 0;
-            matchScore += productFilter.StoneTypes?.Count(t => clientFilter.StoneTypes?.Contains(t) == true) ?? 0;
+            matchScore += (productFilter.Stones?.Count(s => clientFilter.Stones?.Contains(s) == true) ?? 0) * ProductFilterScore.Weights["Stone"];
+            matchScore += (productFilter.StoneShapes?.Count(s => clientFilter.StoneShapes?.Contains(s) == true) ?? 0) * ProductFilterScore.Weights["StoneShape"];
+            matchScore += (productFilter.StoneColors?.Count(c => clientFilter.StoneColors?.Contains(c) == true) ?? 0) * ProductFilterScore.Weights["StoneColor"];
+            matchScore += (productFilter.StoneSizes?.Count(s => clientFilter.StoneSizes?.Contains(s) == true) ?? 0) * ProductFilterScore.Weights["StoneSize"];
+            matchScore += (productFilter.StoneTypes?.Count(t => clientFilter.StoneTypes?.Contains(t) == true) ?? 0) * ProductFilterScore.Weights["StoneType"];
 
             if (productFilter.CountMin != null && clientFilter.CountMin != null && clientFilter.CountMin <= productFilter.CountMin)
-                matchScore++;
+                matchScore += ProductFilterScore.Weights["Count"];
 
             if (productFilter.CountMax != null && clientFilter.CountMax != null && clientFilter.CountMax >= productFilter.CountMax)
-                matchScore++;
+                matchScore += ProductFilterScore.Weights["Count"];
 
             return matchScore;
         }
