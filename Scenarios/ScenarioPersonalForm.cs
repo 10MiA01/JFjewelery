@@ -203,41 +203,73 @@ namespace JFjewelery.Scenarios
         public async Task FinishForm(Telegram.Bot.Types.Update update, CancellationToken cancellationToken)
         {
             var chatId = update.GetChatId();
+
+            var session = await _sessionService.GetOrCteateSessionAsync(update)
+                ?? throw new Exception("Chat session not found");
+            var scenario = session.CurrentScenario;
+            _scenario = await _dbContext.Scenarios
+            .Include(s => s.Steps)
+                .ThenInclude(step => step.Options)
+            .Include(s => s.Steps)
+                .ThenInclude(step => step.NextStep)
+            .FirstOrDefaultAsync(s => s.Name == scenario);
+
             //Get the filter
             var finishFilter = await _sessionService.GetFilterCriteriaAsync(chatId);
             //Filter in db
-            var top3Products = await _characteristicsFilter.FilterMatchProductsAsync(finishFilter);
-            //send the products 
-            await _botClient.SendTextMessageAsync(
-               chatId: chatId,
-               text: $"Here are product that's perfect match for you!",
-               cancellationToken: cancellationToken);
-
-            foreach (var product in top3Products)
+            List<Product> top3Products;
+            if (_scenario!.Name == "Custom characteristics")
             {
-                var relativePath = product.Images?.FirstOrDefault()?.FilePath;
+                top3Products = await _characteristicsFilter.FilterSelectProductsAsync(finishFilter);
+            }
+            else
+            {
+                top3Products = await _characteristicsFilter.FilterMatchProductsAsync(finishFilter);
+            }
+                
 
-                Console.WriteLine($"image url: {relativePath}");
+            if (top3Products.Count == 0)
+            {
+                await _botClient.SendTextMessageAsync(
+               chatId: chatId,
+               text: $"Sorry, we don't have such a jewel right now, but you can check others our products :)",
+               cancellationToken: cancellationToken);
+            }
+            else
+            {
+                //send the products 
+                await _botClient.SendTextMessageAsync(
+                   chatId: chatId,
+                   text: $"Here are product that's perfect match for you!",
+                   cancellationToken: cancellationToken);
 
-                if (!string.IsNullOrEmpty(relativePath))
+                foreach (var product in top3Products)
                 {
-                    var imageUrl = new Uri(_staticBaseUri, relativePath.Replace("\\", "/")).ToString();
-                    Console.WriteLine($"Full image URL: {imageUrl}");
+                    var relativePath = product.Images?.FirstOrDefault()?.FilePath;
 
-                    await _botClient.SendPhotoAsync(
-                        chatId: chatId,
-                        photo: InputFile.FromUri(imageUrl), 
-                        caption: $"{product.Name}\nPrice: {product.Price}\nQuantity: {product.Quantity}",
-                        cancellationToken: cancellationToken);
-                }
-                else
-                {
-                    await _botClient.SendTextMessageAsync(
-                        chatId: chatId,
-                        text: $"{product.Name}\nPrice: {product.Price}\nQuantity: {product.Quantity}",
-                        cancellationToken: cancellationToken);
+                    Console.WriteLine($"image url: {relativePath}");
+
+                    if (!string.IsNullOrEmpty(relativePath))
+                    {
+                        var imageUrl = new Uri(_staticBaseUri, relativePath.Replace("\\", "/")).ToString();
+                        Console.WriteLine($"Full image URL: {imageUrl}");
+
+                        await _botClient.SendPhotoAsync(
+                            chatId: chatId,
+                            photo: InputFile.FromUri(imageUrl),
+                            caption: $"{product.Name}\nPrice: {product.Price}\nQuantity: {product.Quantity}",
+                            cancellationToken: cancellationToken);
+                    }
+                    else
+                    {
+                        await _botClient.SendTextMessageAsync(
+                            chatId: chatId,
+                            text: $"{product.Name}\nPrice: {product.Price}\nQuantity: {product.Quantity}",
+                            cancellationToken: cancellationToken);
+                    }
                 }
             }
+                
 
             //Reset scenario
             await _sessionService.ResetSessionAsync(chatId);

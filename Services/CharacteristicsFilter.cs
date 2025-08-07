@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using JFjewelery.Data;
-using JFjewelery.Models.DTO;
+using JFjewelery.Models;
 using JFjewelery.Models.Characteristics;
+using JFjewelery.Models.DTO;
+using JFjewelery.Models.Helpers;
 using JFjewelery.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using static System.Collections.Specialized.BitVector32;
-using JFjewelery.Models;
-using JFjewelery.Models.Helpers;
-using System.Diagnostics.Metrics;
-using System.Reflection.PortableExecutable;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace JFjewelery.Services
 {
@@ -77,6 +78,122 @@ namespace JFjewelery.Services
 
             return top3Products;
 
+        }
+
+        public async Task<List<Product>> FilterSelectProductsAsync(ProductFilterCriteria clientFilter)
+        {
+            Dictionary<Product, int> productMatches = new Dictionary<Product, int>();
+
+            var products = await _dbContext.Products
+                .Include(p => p.Characteristic)
+                .Include(p => p.Images)
+                .ToListAsync();
+
+            foreach (var product in products)
+            {
+                var characteristic = product.Characteristic;
+
+                await _dbContext.Entry(characteristic)
+                    .Collection(c => c.Stones).Query()
+                    .Include(s => s.Stone)
+                    .Include(s => s.Shape)
+                    .Include(s => s.Color)
+                    .Include(s => s.Size)
+                    .Include(s => s.Type)
+                    .LoadAsync();
+
+                await _dbContext.Entry(characteristic)
+                    .Collection(c => c.Metals).Query()
+                    .Include(m => m.Metal)
+                    .Include(m => m.Shape)
+                    .Include(m => m.Color)
+                    .Include(m => m.Size)
+                    .Include(m => m.Type)
+                    .LoadAsync();
+            }
+            foreach (var product in products)
+            {
+                var productFilter = ConvertProductToCriteria(product);
+
+                if (SelectFilters(clientFilter, productFilter))
+                {
+                    int score = MatchFilters(clientFilter, productFilter);
+                    productMatches.Add(product, score);
+                }
+            }
+
+            var topProducts = productMatches
+                .OrderByDescending(p => p.Value)
+                .Take(3)
+                .Select(p => p.Key)
+                .ToList();
+
+            return topProducts;
+        }
+
+        public bool SelectFilters(ProductFilterCriteria clientFilter, ProductFilterCriteria productFilter)
+        {
+            if (clientFilter.Gender != null && clientFilter.Gender != productFilter.Gender) return false;
+            if (clientFilter.Styles != null &&
+                (productFilter.Styles == null ||
+                 !productFilter.Styles.Any(style => clientFilter.Styles.Contains(style)))) return false;
+            if (clientFilter.Manufacturers != null &&
+                (productFilter.Manufacturers == null ||
+                 !productFilter.Manufacturers.Any(style => clientFilter.Manufacturers.Contains(style)))) return false;
+
+            if (!string.IsNullOrEmpty(clientFilter.Description) &&
+                !string.IsNullOrEmpty(productFilter.Description))
+            {
+                var clientWords = clientFilter.Description.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var productDescription = productFilter.Description.ToLower();
+
+                bool hasMatch = clientWords.Any(word => productDescription.Contains(word));
+
+                if (!hasMatch)
+                    return false;
+            }
+
+
+            if (clientFilter.Metals != null &&
+                (productFilter.Metals == null ||
+                 !productFilter.Metals.Any(style => clientFilter.Metals.Contains(style)))) return false;
+            if (clientFilter.MetalShapes != null &&
+                    (productFilter.MetalShapes == null ||
+                     !productFilter.MetalShapes.Any(style => clientFilter.MetalShapes.Contains(style)))) return false;
+            if (clientFilter.MetalColors != null &&
+                (productFilter.MetalColors == null ||
+                 !productFilter.MetalColors.Any(style => clientFilter.MetalColors.Contains(style)))) return false;
+            if (clientFilter.MetalSizes != null &&
+                (productFilter.MetalSizes == null ||
+                 !productFilter.MetalSizes.Any(style => clientFilter.MetalSizes.Contains(style)))) return false;
+            if (clientFilter.MetalTypes != null &&
+                (productFilter.MetalTypes == null ||
+                 !productFilter.MetalTypes.Any(style => clientFilter.MetalTypes.Contains(style)))) return false;
+
+            if (clientFilter.Purity != null && clientFilter.Purity != productFilter.Purity) return false;
+            if (clientFilter.WeightMin != null && clientFilter.WeightMin <= productFilter.WeightMin) return false;
+            if (clientFilter.WeightMax != null && clientFilter.WeightMax >= productFilter.WeightMax) return false;
+
+            if (clientFilter.Stones != null &&
+                (productFilter.Stones == null ||
+                 !productFilter.Stones.Any(style => clientFilter.Stones.Contains(style)))) return false;
+            if (clientFilter.StoneShapes != null &&
+                    (productFilter.StoneShapes == null ||
+                     !productFilter.StoneShapes.Any(style => clientFilter.StoneShapes.Contains(style)))) return false;
+            if (clientFilter.StoneColors != null &&
+                (productFilter.StoneColors == null ||
+                 !productFilter.StoneColors.Any(style => clientFilter.StoneColors.Contains(style)))) return false;
+            if (clientFilter.StoneSizes != null &&
+                (productFilter.StoneSizes == null ||
+                 !productFilter.StoneSizes.Any(style => clientFilter.StoneSizes.Contains(style)))) return false;
+            if (clientFilter.StoneTypes != null &&
+                (productFilter.StoneTypes == null ||
+                 !productFilter.StoneTypes.Any(style => clientFilter.StoneTypes.Contains(style)))) return false;
+
+            if (clientFilter.CountMin != null && clientFilter.CountMin <= productFilter.CountMin) return false;
+            if (clientFilter.CountMax != null && clientFilter.CountMax >= productFilter.CountMax) return false;
+
+            return true;
         }
 
         public int MatchFilters(ProductFilterCriteria clientFilter, ProductFilterCriteria productFilter)
