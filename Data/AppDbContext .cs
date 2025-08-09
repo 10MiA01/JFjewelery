@@ -1647,6 +1647,14 @@ namespace JFjewelery.Data
                 new Step
                 {
                     Id = 21,
+                    Name = "Get description",
+                    QuestionText = "Please give a discrittion of what you want",
+                    NextStepId = 22,
+                    ScenarioId = 5
+                },
+                new Step
+                {
+                    Id = 22,
                     Name = "Get photo",
                     QuestionText = "Please send a photo.",
                     ScenarioId = 5

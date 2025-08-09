@@ -76,7 +76,7 @@ namespace JFjewelery.Utility
             }
 
             //For random message
-            if (update.Type == UpdateType.Message && update.Message!.Text != null && update.Message?.Text != "/start")
+            if (_currentSession?.CurrentScenario == null  && update.Type == UpdateType.Message && update.Message!.Text != null && update.Message?.Text != "/start")
             {
                 var telegramAcc = update.Message.From?.Username
                     ?? update.Message.From?.Id.ToString();
@@ -138,7 +138,8 @@ namespace JFjewelery.Utility
                         (update.Message?.Document != null && update.Message.Document.MimeType?.StartsWith("image/") == true)
                     ) &&
                     (_currentSession?.CurrentScenario == "Custom by picture" || _currentSession?.CurrentScenario == "Virtual fitting")
-                )
+                ) ||
+                (_currentSession?.CurrentScenario == "Virtual fitting" && update.Type == UpdateType.Message && update.Message!.Text != null && update.Message?.Text != "/start")
             )
             {
                 var telegramAcc = update.CallbackQuery?.From?.Username
@@ -184,7 +185,8 @@ namespace JFjewelery.Utility
                         update.Message?.Photo?.Any() == true ||
                         (update.Message?.Document != null && update.Message.Document.MimeType?.StartsWith("image/") == true)
                     ) &&
-                    (_currentSession?.CurrentScenario == "Custom by picture" || _currentSession?.CurrentScenario == "Virtual fitting"))
+                    (_currentSession?.CurrentScenario == "Custom by picture" || _currentSession?.CurrentScenario == "Virtual fitting")) ||
+                    (_currentSession?.CurrentScenario == "Virtual fitting" && update.Type == UpdateType.Message && update.Message!.Text != null && update.Message?.Text != "/start")
                     )
                 {
                     Console.WriteLine("Trying to get in scenario 5_2");

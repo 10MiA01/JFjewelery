@@ -131,6 +131,33 @@ namespace JFjewelery.Services
             return topProducts;
         }
 
+        public async Task<Product> GetProductByCategoryAndFilter (string category, ProductFilterCriteria clientFilter)
+        {
+            var products = await _dbContext.Products
+                .Include(p => p.Characteristic)
+                .Include(p => p.Images)
+                .Include(p => p.Category)
+                .Where(c => c.Category.Name == category)
+                .ToListAsync();
+
+            Dictionary<Product, int> productMatches = new Dictionary<Product, int>();
+            foreach (var product in products)
+            {
+                var productFilter = ConvertProductToCriteria(product);
+
+                int score = MatchFilters(clientFilter, productFilter);
+
+                productMatches.Add(product, score);
+            }
+
+            var topProduct = productMatches
+                .OrderByDescending(p => p.Value)
+                .Select(p => p.Key)
+                .FirstOrDefault(); ;
+
+            return topProduct;
+        }
+
         public bool SelectFilters(ProductFilterCriteria clientFilter, ProductFilterCriteria productFilter)
         {
             if (clientFilter.Gender != null && clientFilter.Gender != productFilter.Gender) return false;

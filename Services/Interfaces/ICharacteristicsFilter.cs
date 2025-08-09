@@ -12,6 +12,7 @@ namespace JFjewelery.Services.Interfaces
     {
         Task<List<Product>> FilterMatchProductsAsync(ProductFilterCriteria productFilterCriteria);
         Task<List<Product>> FilterSelectProductsAsync(ProductFilterCriteria clientFilter);
+        Task<Product> GetProductByCategoryAndFilter(string category, ProductFilterCriteria clientFilter);
         bool SelectFilters(ProductFilterCriteria clientFilter, ProductFilterCriteria productFilter);
         int MatchFilters(ProductFilterCriteria clientFilter, ProductFilterCriteria productFilter);
         ProductFilterCriteria ConvertProductToCriteria(Product product);

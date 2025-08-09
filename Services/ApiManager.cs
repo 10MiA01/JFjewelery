@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Threading;
+using JFjewelery.Models;
 using JFjewelery.Models.DTO;
 using JFjewelery.Services.Interfaces;
 
@@ -39,7 +40,6 @@ namespace JFjewelery.Services
             });
 
             return result!;  // result! => null-forgiving
-            
 
         }
 
@@ -68,6 +68,34 @@ namespace JFjewelery.Services
                 var result = memoryStream.ToArray();
                 return result!; 
             }
+
+        }
+
+        public async Task<ProductFilterCriteria> AnalyzeSentenceAsync(string description, CancellationToken cancellationToken = default)
+        {
+            using var content = new MultipartFormDataContent();
+            content.Add(new StringContent(description), "sentence");
+
+            // Check before sending
+            var requestUri = "/analyze-image";
+            var fullUri = new Uri(_httpClient.BaseAddress!, requestUri);
+
+            Console.WriteLine($"[DEBUG] Sending request to: {fullUri}");
+            if (!fullUri.IsAbsoluteUri)
+            {
+                throw new InvalidOperationException("Request URI is not absolute. BaseAddress might not be set properly.");
+            }
+
+            var response = await _httpClient.PostAsync(requestUri, content, cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync(cancellationToken);
+            var result = JsonSerializer.Deserialize<ProductFilterCriteria>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            });
+
+            return result!;  // result! => null-forgiving
 
         }
 

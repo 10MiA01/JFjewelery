@@ -1,4 +1,6 @@
-﻿using JFjewelery.Data;
+﻿using System.Net.Http;
+using System.Runtime.Intrinsics.X86;
+using JFjewelery.Data;
 using JFjewelery.Extensions;
 using JFjewelery.Models;
 using JFjewelery.Models.DTO;
@@ -10,7 +12,6 @@ using JFjewelery.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using System.Net.Http;
 
 
 namespace JFjewelery.Scenarios
@@ -118,19 +119,7 @@ namespace JFjewelery.Scenarios
                 var categorySelected = update.CallbackQuery.Data.Replace(" ", "_");
                 Console.WriteLine($"Selected category : {categorySelected}");
 
-                //Get the instruction
-                if (Enum.TryParse<CategoryTryOnInstructions>(categorySelected, out var categoryEnum))
-                {
-                    string instruction = CategoryInstructions.Instructions[categoryEnum];
-
-                    // Send instruction for photo
-                    await _botClient.SendTextMessageAsync(chatId, instruction);
-                }
-                else
-                {
-                    // Instruction not found
-                    Console.WriteLine("Instruction not found");
-                }
+                session.TempData = categorySelected;
 
                 //Null check
                 if (currentStep == null)
@@ -145,8 +134,69 @@ namespace JFjewelery.Scenarios
                 session.ScenarioStep = currentStep.Name;
                 await _sessionService.UpdateSessionAsync(session);
 
+                //Get updated data
+                session = await _sessionService.GetOrCteateSessionAsync(update)
+                ?? throw new Exception("Chat session not found");
+
+                //Scenario info
+                scenario = session.CurrentScenario;
+                _scenario = await _dbContext.Scenarios
+                .Include(s => s.Steps)
+                    .ThenInclude(step => step.NextStep)
+                .FirstOrDefaultAsync(s => s.Name == scenario);
+
+                currentStep = _steps.Where(s => s.Name == session.ScenarioStep).FirstOrDefault();
+
+                if (currentStep == null)
+                    throw new Exception("currentStep could not be resolved.ScenarioPersonalForm_1");
+
+                await _botClient.SendTextMessageAsync(
+                    chatId: chatId,
+                    text: currentStep.QuestionText,
+                    cancellationToken: cancellationToken);
                 return;
-                
+            }
+
+            else if (session.ScenarioStep == "Get description" && update.Message?.Text != null)
+            {
+                var description = update.Message.Text;
+
+                // give description to ai api and save as session.FilterJson
+
+                var responceFilter = await _apiManager.AnalyzeSentenceAsync(description);
+                await _sessionService.UpdateFilterCriteriaAsync(chatId, responceFilter, FilterOperation.Add);
+
+                //Set next step
+                var currentStep = _steps.Where(s => s.Name == session.ScenarioStep).FirstOrDefault();
+                if (currentStep == null)
+                    throw new Exception("currentStep could not be resolved.ScenarioPersonalForm_1");
+
+                await _botClient.SendTextMessageAsync(
+                    chatId: chatId,
+                    text: currentStep.QuestionText,
+                    cancellationToken: cancellationToken);
+
+                currentStep = currentStep.NextStep;
+                session.ScenarioStep = currentStep.Name;
+                await _sessionService.UpdateSessionAsync(session);
+
+
+                var categorySelected = session.TempData;
+
+                //Get the instruction
+                if (Enum.TryParse<CategoryTryOnInstructions>(categorySelected, out var categoryEnum))
+                {
+                    string instruction = CategoryInstructions.Instructions[categoryEnum];
+
+                    // Send instruction for photo
+                    await _botClient.SendTextMessageAsync(chatId, instruction);
+                }
+                else
+                {
+                    // Instruction not found
+                    Console.WriteLine("Instruction not found");
+                }
+
             }
 
             else if (session.ScenarioStep != null && update.Message?.Photo?.Any() == true ||
@@ -172,19 +222,18 @@ namespace JFjewelery.Scenarios
                     throw new Exception("No products in such category");
                 }
 
-                // Get random product
-                var random = new Random();
-                var randomProduct = productsForCategory[random.Next(productsForCategory.Count)];
-                int productId = randomProduct.Id;
-                string productCategory = randomProduct.Category.Name.Replace(" ", "_");
+                // Get most suitable product
+                var finishFilter = await _sessionService.GetFilterCriteriaAsync(chatId);
+                var topProduct = await _characteristicsFilter.GetProductByCategoryAndFilter(categorySelected, finishFilter);
+                int productId = topProduct.Id;
 
-                // Ckeking 
-                Console.WriteLine($"Sending category: {productCategory}");
+                // Cheking 
+                Console.WriteLine($"Sending category: {categorySelected}");
                 Console.WriteLine($"Sending id: {productId}");
                 Console.WriteLine($"Image bytes length: {bytePicture.Length}");
 
                 //Give image to api 
-                byte[] imageBytes = await _apiManager.TryOnAsync(bytePicture, productCategory, productId);
+                byte[] imageBytes = await _apiManager.TryOnAsync(bytePicture, categorySelected, productId);
 
                 //Send image
                 using (var stream = new MemoryStream(imageBytes))
